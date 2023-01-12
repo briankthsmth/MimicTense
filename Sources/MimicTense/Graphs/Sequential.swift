@@ -1,0 +1,33 @@
+//
+//  Copyright 2022 Brian Keith Smith
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+//  Created by Brian Smith on 4/19/22.
+//
+
+import Foundation
+import MimicTransferables
+
+public struct Sequential<NativeType: NeuralNativeType>: Graphable {
+    public enum SequentialError: Error { case notConvertable }
+    
+    public var identifier = GraphIdentifier(kind: .sequential)
+    
+    public let layers: [any Layerable]
+    
+    public init(@GraphLayersBuilder<NativeType> makeGraphLayers: () -> [any Layerable]) {
+        let results = makeGraphLayers()
+        layers = results
+    }
+}
