@@ -17,7 +17,7 @@
 //
 
 import Foundation
-import MimicTransferables
+import MimicCore
 
 public typealias NeuralNativeType = SupportedNativeType & Equatable
 
