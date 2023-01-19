@@ -18,52 +18,83 @@
 
 import Foundation
 
+/// Transferable type for datasets used in inference and training.
 public struct DataSet: Transferable {
+    /// An array of tensors for each graph's inputs in a model.
     public let tensors: [TensorArray]
+    /// An array of tensors for each graph's training labels in a model.
+    public let labels: [TensorArray]?
+    /// The size of a batch of data.
     public let batchSize: Int
     
+    ///  The number of batches that the input tensors contain given the batch size.
     public var batchCount: Int {
         tensors.reduce(tensors[0].endIndex) { min($0, $1.endIndex) } / batchSize
     }
     
-    public init(inputTensor: Tensor, batchSize: Int) {
+    ///  Creates a data set with a single tensor of input data and training labels.
+    ///
+    ///  - Parameters:
+    ///   - inputTensor: A tensor containing a single graph's input data.
+    ///   - labels: Optional tensor containing expected labels corresponding to the input data used in inference or training.
+    ///   - batchSize: The size of a batch of data used to infer or train a model.
+    public init(inputTensor: Tensor, labels: Tensor? = nil, batchSize: Int) {
         tensors = [TensorArray(tensors: [inputTensor])]
+        if let labels = labels {
+            self.labels = [TensorArray(tensors: [labels])]
+        } else {
+            self.labels = nil
+        }
         self.batchSize = batchSize
     }
     
-    public init(inputTensors: [[Tensor]], batchSize: Int) {
+    /// Creates a data set for use with a model containing multiple graphs.
+    ///
+    ///  This initializer uses multideminsional arrays for input tensors and label tensors. The first ordinal element is for
+    ///  arrays of tensor data for input and output of each graph of a model. The next ordinal element is array of tensors
+    ///  containing the input data or labels, which will get concatenated into a single tensor. So, the following array of tensors:
+    ///
+    ///  ```swift
+    ///     [
+    ///         [
+    ///             Tensor([Float]([2, 1])),
+    ///             Tensor([Float]([4, 3])),
+    ///         ],
+    ///         [
+    ///             Tensor([Float]([5, 6])),
+    ///             Tensor([Float]([7, 8])),
+    ///         ]
+    ///     ]
+    ///  ```
+    ///  is equivalent to,
+    ///  ```swift
+    ///     [
+    ///         [
+    ///             Tensor([Float]([
+    ///                 [2, 1],
+    ///                 [4, 3]
+    ///             ]))
+    ///         ],
+    ///         [
+    ///             Tensor([Float]([
+    ///                 [5, 6],
+    ///                 [7, 8]
+    ///              ])),
+    ///         ]
+    ///     ]
+    ///  ```
+    ///
+    /// - Parameters:
+    ///  - inputTensors: Multideminsional array containing an array of input tensor data for each graph in a model.
+    ///  - labels: Optional multideminsional array containg an array of expected labels for each graph.
+    ///  - batchSize: The size of a batch of data used to train or infer a model.
+    public init(inputTensors: [[Tensor]], labels: [[Tensor]]? = nil, batchSize: Int) {
         tensors = inputTensors.map { TensorArray(tensors: $0) }
+        if let labels = labels {
+            self.labels = labels.map { TensorArray(tensors: $0) }
+        } else {
+            self.labels = nil
+        }
         self.batchSize = batchSize
-    }
-    
-    public func makeBatch(at batch: Int) -> [Tensor] {
-        var batchTensors = [Tensor]()
-        tensors.forEach {
-            batchTensors.append(makeBatch(with: $0, batch: batch))
-        }
-        return batchTensors
-    }
-    
-    @discardableResult
-    public func forEachBatch(_ body: ([Tensor]) -> Void) -> Self {
-        let batchCount = tensors.reduce(tensors[0].endIndex) { min($0, $1.endIndex) } / batchSize
-        for batch in 0..<batchCount {
-            var batchTensors = [Tensor]()
-            tensors.forEach {
-                batchTensors.append(makeBatch(with: $0, batch: batch))
-            }
-            body(batchTensors)
-        }
-        return self
-    }
-    
-    func makeBatch(with tensors: TensorArray, batch: Int) -> Tensor {
-        guard tensors.count > 0 else {
-            return Tensor(shape: [], dataType: .float32)
-        }
-        
-        let batchStartIndex = batch * batchSize
-        let batchEndIndex = batchStartIndex + batchSize
-        return tensors[batchStartIndex..<batchEndIndex]
     }
 }

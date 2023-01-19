@@ -20,8 +20,6 @@ import Foundation
 import MLCompute
 import MimicTransferables
 
-// TODO: Handle optional values instead of force unwrapping them.
-
 /// Class to perform inference on a set of neural network graphs.
 /// 
 final class MlComputeInferenceGraph: InferenceGraphable, PlateformExecutionGraphable {    
