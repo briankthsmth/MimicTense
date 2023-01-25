@@ -22,7 +22,7 @@ import MimicTransferables
 final class DataSetBatchTests: XCTestCase {
     let testTensors = [
         [
-            Tensor([Float]([2, 1])),
+            Tensor([Float]([2, 1])), 
             Tensor([Float]([4, 3])),
             Tensor([Float]([6, 5])),
             Tensor([Float]([8, 7]))
@@ -46,6 +46,26 @@ final class DataSetBatchTests: XCTestCase {
         let expectedTensors = [dataSet.tensors[0][2...3], dataSet.tensors[1][2...3]]
         
         XCTAssertEqual(batchTensors, expectedTensors)
+    }
+    
+    func testMakeBatchWithSingleTensor() throws {
+        let tensor = Tensor([[Float]]([
+            [1.5],
+            [2.3],
+            [-4.4],
+            [5.2],
+            [-0.8],
+            [2.7],
+            [0.12],
+            [-3.12],
+            [2.8],
+            [4.2]
+        ]))
+        let dataSet = DataSet(inputTensor: tensor, batchSize: 2)
+        let batchTensor = dataSet.makeBatch(at: 1)
+        let expectedTensors = [tensor[2...3]]
+        
+        XCTAssertEqual(batchTensor, expectedTensors)
     }
     
     func testMakeBatchLabels() throws {

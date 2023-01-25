@@ -21,15 +21,15 @@ import Foundation
 /// Transferable type for datasets used in inference and training.
 public struct DataSet: Transferable {
     /// An array of tensors for each graph's inputs in a model.
-    public let tensors: [TensorArray]
+    public let tensors: [Tensor]
     /// An array of tensors for each graph's training labels in a model.
-    public let labels: [TensorArray]?
+    public let labels: [Tensor]?
     /// The size of a batch of data.
     public let batchSize: Int
     
     ///  The number of batches that the input tensors contain given the batch size.
     public var batchCount: Int {
-        tensors.reduce(tensors[0].endIndex) { min($0, $1.endIndex) } / batchSize
+        tensors.first?.shape[0] ?? 0 / batchSize
     }
     
     ///  Creates a data set with a single tensor of input data and training labels.
@@ -39,9 +39,9 @@ public struct DataSet: Transferable {
     ///   - labels: Optional tensor containing expected labels corresponding to the input data used in inference or training.
     ///   - batchSize: The size of a batch of data used to infer or train a model.
     public init(inputTensor: Tensor, labels: Tensor? = nil, batchSize: Int) {
-        tensors = [TensorArray(tensors: [inputTensor])]
+        tensors = [inputTensor]
         if let labels = labels {
-            self.labels = [TensorArray(tensors: [labels])]
+            self.labels = [labels]
         } else {
             self.labels = nil
         }
@@ -89,9 +89,13 @@ public struct DataSet: Transferable {
     ///  - labels: Optional multideminsional array containg an array of expected labels for each graph.
     ///  - batchSize: The size of a batch of data used to train or infer a model.
     public init(inputTensors: [[Tensor]], labels: [[Tensor]]? = nil, batchSize: Int) {
-        tensors = inputTensors.map { TensorArray(tensors: $0) }
+        tensors = inputTensors.map {
+            $0.count > 1 ? $0[1...].reduce($0[0]) { $0.appended($1) } : $0[0]
+        }
         if let labels = labels {
-            self.labels = labels.map { TensorArray(tensors: $0) }
+            self.labels = labels.map {
+                $0.count > 1 ? $0[1...].reduce($0[0]) { $0.appended($1) } : $0[0]
+            }
         } else {
             self.labels = nil
         }

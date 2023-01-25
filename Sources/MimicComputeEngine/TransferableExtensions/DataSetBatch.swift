@@ -42,7 +42,7 @@ extension DataSet {
     }
         
     /// Internal factory method to create batches from either the input tensor or label tensor arrays.
-    func makeBatch(with tensors: [TensorArray], batch: Int) -> [Tensor] {
+    func makeBatch(with tensors: [Tensor], batch: Int) -> [Tensor] {
         var batchTensors = [Tensor]()
         tensors.forEach {
             batchTensors.append(makeBatch(with: $0, batch: batch))
@@ -51,13 +51,9 @@ extension DataSet {
     }
     
     /// Internal factory method to create a batch from a TensorArray.
-    func makeBatch(with tensors: TensorArray, batch: Int) -> Tensor {
-        guard tensors.count > 0 else {
-            return Tensor(shape: [], dataType: .float32)
-        }
-        
+    func makeBatch(with tensor: Tensor, batch: Int) -> Tensor {
         let batchStartIndex = batch * batchSize
         let batchEndIndex = batchStartIndex + batchSize
-        return tensors[batchStartIndex..<batchEndIndex]
+        return tensor[batchStartIndex..<batchEndIndex]
     }
 }
