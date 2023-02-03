@@ -29,7 +29,7 @@ public struct DataSet: Transferable {
     
     ///  The number of batches that the input tensors contain given the batch size.
     public var batchCount: Int {
-        tensors.first?.shape[0] ?? 0 / batchSize
+        (tensors.first?.shape.first ?? 0) / batchSize
     }
     
     ///  Creates a data set with a single tensor of input data and training labels.

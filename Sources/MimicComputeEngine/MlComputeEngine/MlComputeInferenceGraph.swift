@@ -22,7 +22,7 @@ import MimicTransferables
 
 /// Class to perform inference on a set of neural network graphs.
 /// 
-final class MlComputeInferenceGraph: InferenceGraphable, PlateformExecutionGraphable {    
+final class MlComputeInferenceGraph: InferenceGraphable, PlatformExecutionGraphable {    
     init(graphs: [Graph]) throws {
         self.graphs = graphs
         
@@ -48,7 +48,7 @@ final class MlComputeInferenceGraph: InferenceGraphable, PlateformExecutionGraph
             }
         }
     }
-    
+        
     func retrieveOutputs() -> [Tensor] {
         outputTensors.map { convert(from: $0) }
     }

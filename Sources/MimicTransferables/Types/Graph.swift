@@ -24,10 +24,15 @@ public struct Graph: Transferable {
         case sequential
     }
     
+    /// The kind of graph this represents.
     public let kind: Kind
+    /// The type of data used in the graph.
     public let dataType: DataType
+    ///  Arrays of placeholder tensors that represent the inputs to the graph.
     public let inputTensors: [[Tensor]]
+    /// The layers for the graph in the order they are connected.
     public let layers: [Layer]
+    /// The position in the shape array that represents the feature channel.
     public let featureChannelPosition: FeatureChannelPosition
     
     public init(

@@ -1,5 +1,5 @@
 //
-//  Copyright 2022 Brian Keith Smith
+//  Copyright 2023 Brian Keith Smith
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -12,16 +12,14 @@
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
 //
-//  Created by Brian Smith on 9/29/22.
+//
+//  Created by Brian Smith on 1/21/23.
 //
 
 import Foundation
+import MimicTransferables
 
-public enum ComputeEngineError: Error {
-    case layerConversion
-    case deviceNotAvailable
-    case invalidWeights
-    case invalidOutput
+protocol ModelInspectable {
+    func retrieveGraphs() throws -> [Graph]
 }

@@ -38,16 +38,18 @@ public struct Layer: Transferable {
         }
     }
     
-    // General properties
+    // MARK: General properties
     public let label: String?
     public let dataType: DataType
     public let kind: Kind
     
-    // Arithmetic layer properties
+    // MARK: Arithmetic layer properties
     public let arithmeticOperation: ArithmeticOperation?
     
-    // Convolution layer properties
+    // MARK: Convolution layer properties
     public let kernelSize: KernelSize?
+    
+    // MARK: Convolution/fully connected layer properties
     public let inputFeatureChannelCount: Int?
     public let outputFeatureChannelCount: Int?
     public let weights: Tensor?
