@@ -23,4 +23,15 @@ struct MlComputePlatformFactory: PlatformFactory {
     func makeInferenceGraph(graphs: [Graph]) throws -> InferenceGraphable {
         try MlComputeInferenceGraph(graphs: graphs)
     }
+    
+    func makeTrainingGraph(graphs: [Graph],
+                           lossLabelTensors: [Tensor],
+                           lossFunction: LossFunctionType,
+                           optimizer: OptimizerType) throws -> TrainingGraphable
+    {
+        try MlComputeTrainingGraph(graphs: graphs,
+                                   lossLabelTensors: lossLabelTensors,
+                                   lossFunction: lossFunction,
+                                   optimizer: optimizer)
+    }
 }

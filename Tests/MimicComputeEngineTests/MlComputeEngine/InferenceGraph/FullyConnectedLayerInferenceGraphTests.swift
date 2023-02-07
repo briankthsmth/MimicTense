@@ -22,7 +22,7 @@ import MimicTransferables
 
 final class FullyConnectedLayerInferenceGraphTests: XCTestCase {
     func testSimpleAdditionGraph() async throws {
-        let inputTensor = Tensor([Float]([2, 2]))
+        let inputTensor = Tensor([[Float]]([[2, 2]]))
         let dataSet = DataSet(inputTensor: inputTensor, batchSize: 1)
         let weights = Tensor([[Float]]([[1, 0.5]]))
         let biases = Tensor([Float]([2]))
@@ -38,8 +38,8 @@ final class FullyConnectedLayerInferenceGraphTests: XCTestCase {
                           layers: [layer],
                           featureChannelPosition: .notApplicable)
         let inferenceGraph = try MlComputeInferenceGraph(graphs: [graph])
-        inferenceGraph.compile(device: .gpu)
-        let results = await inferenceGraph.execute(inputs: dataSet.makeBatch(at: 0),
+        try inferenceGraph.compile(device: .gpu)
+        let results = try await inferenceGraph.execute(inputs: dataSet.makeBatch(at: 0),
                                                         batchSize: 1)
         let resultTensor = results[0]
         let expectedVector: [Float] = [5]

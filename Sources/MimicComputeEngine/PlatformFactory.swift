@@ -21,4 +21,8 @@ import MimicTransferables
 
 protocol PlatformFactory {
     func makeInferenceGraph(graphs: [Graph]) throws -> InferenceGraphable
+    func makeTrainingGraph(graphs: [Graph],
+                           lossLabelTensors: [Tensor],
+                           lossFunction: LossFunctionType,
+                           optimizer: OptimizerType) throws -> TrainingGraphable
 }

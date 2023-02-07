@@ -19,8 +19,6 @@
 import Foundation
 import MimicTransferables
 
-protocol InferenceGraphable: AnyObject {
-    func compile(device: DeviceType)
-    func execute(inputs: [Tensor], batchSize: Int) async -> [Tensor]
+protocol InferenceGraphable: AnyObject, ModelInspectable, Compilable, InferenceExecutable {
     func retrieveOutputs() -> [Tensor]
 }

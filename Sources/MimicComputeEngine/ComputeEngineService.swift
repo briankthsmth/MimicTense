@@ -29,8 +29,15 @@ public distributed actor ComputeEngineService {
         platformFactory = ComputeEngineService.makePlatformFactory()
     }
     
-    public distributed func makeSession(kind: Session.Kind, graphs: [Graph], dataSet: DataSet) throws -> Session {
-        return try Session(kind: kind, graphs: graphs, dataSet: dataSet, platformFactory: platformFactory, actorSystem: actorSystem)
+    public distributed func makeSession(kind: Session.Kind,
+                                        graphs: [Graph],
+                                        dataSet: DataSet) throws -> Session
+    {
+        return try Session(kind: kind,
+                           graphs: graphs,
+                           dataSet: dataSet,
+                           platformFactory: platformFactory,
+                           actorSystem: actorSystem)
     }
     
     private let platformFactory: PlatformFactory

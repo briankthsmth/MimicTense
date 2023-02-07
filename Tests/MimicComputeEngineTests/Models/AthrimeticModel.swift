@@ -19,7 +19,7 @@
 import Foundation
 import MimicTransferables
 
-struct ArithmeticModel {
+struct ArithmeticModel: TestModel {
     struct Constant {
         static let dataType: DataType = .float32
         static let vector1: [Float] = [3, 5, 10]
@@ -33,9 +33,9 @@ struct ArithmeticModel {
     
     let resultVector: [Float]
     let graphs: [Graph]
+    let dataSet: DataSet
     let tensorData1: Tensor
     let tensorData2: Tensor
-    let multiBatchDataSet: DataSet
     
     init() {
         resultVector = zip(Constant.vector1, Constant.vector2).reduce(into: []) { $0.append($1.0 + $1.1) }
@@ -64,7 +64,7 @@ struct ArithmeticModel {
             layers: [layer],
             featureChannelPosition: .notApplicable)]
         
-        multiBatchDataSet = DataSet(inputTensors: Constant.inputs.map { $0.map { Tensor($0) } },
+        dataSet = DataSet(inputTensors: Constant.inputs.map { $0.map { Tensor($0) } },
                                     batchSize: Constant.batchSize)
     }
     

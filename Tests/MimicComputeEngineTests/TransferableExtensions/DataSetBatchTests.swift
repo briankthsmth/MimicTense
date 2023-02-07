@@ -18,6 +18,7 @@
 
 import XCTest
 import MimicTransferables
+@testable import MimicComputeEngine
 
 final class DataSetBatchTests: XCTestCase {
     let testTensors = [
@@ -73,5 +74,13 @@ final class DataSetBatchTests: XCTestCase {
         let expectedLabels = [dataSet.tensors[0][0...1], dataSet.tensors[1][0...1]]
         
         XCTAssertEqual(batchLabels, expectedLabels)
+    }
+    
+    func testLabelsBatchPlaceholder() throws {
+        let expectedBatchLabels = [
+            Tensor(shape: [2,2], dataType: .float32),
+            Tensor(shape: [2,2], dataType: .float32)
+        ]
+        XCTAssertEqual(dataSet.batchLabelsPlaceholder, expectedBatchLabels)
     }
 }

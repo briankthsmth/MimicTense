@@ -24,4 +24,5 @@ public enum ComputeEngineError: Error {
     case deviceNotAvailable
     case invalidWeights
     case invalidOutput
+    case missingLabels
 }

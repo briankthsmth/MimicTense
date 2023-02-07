@@ -21,6 +21,11 @@ import MimicTransferables
 
 /// Extension methods to handle creating batch data from datasets.
 extension DataSet {
+    /// A placeholder Tensor (contains no data) for a batch of labels.
+    var batchLabelsPlaceholder: [Tensor]? {
+        labels?.map { Tensor(shape: [batchSize] + $0.shape[1...], dataType: $0.dataType) }
+    }
+    
     /// Factory method to create batch input data from the data set.
     /// - Parameters:
     ///  - batch: The index for the batch to create

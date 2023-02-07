@@ -13,12 +13,12 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Created by Brian Smith on 7/26/22.
+//  Created by Brian Smith on 6/22/22.
 //
 
 import Foundation
 import MimicTransferables
 
-protocol BatchRunnable {
-    func next() async throws -> [Tensor]?
+protocol InferenceExecutable {
+    func execute(inputs: [Tensor], batchSize: Int) async throws-> [Tensor]
 }

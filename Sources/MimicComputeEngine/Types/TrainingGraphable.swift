@@ -18,6 +18,6 @@
 
 import Foundation
 
-protocol TrainingGraphable: AnyObject {
+protocol TrainingGraphable: AnyObject, ModelInspectable, Compilable, TrainingExecutable {
     
 }

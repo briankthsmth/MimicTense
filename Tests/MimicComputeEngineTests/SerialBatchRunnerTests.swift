@@ -22,14 +22,15 @@ import MimicTransferables
 
 final class SerialBatchRunnerTests: XCTestCase {
     final class TestOperation: Operational {
-        func execute(inputs: [MimicTransferables.Tensor], batchSize: Int) async -> [MimicTransferables.Tensor] {
+        func execute(batch: Int, dataSet: DataSet) async throws -> [Tensor]? {
             await withCheckedContinuation({ continuation in
-                continuation.resume(returning: inputs)
+                continuation.resume(returning: dataSet.makeBatch(at: batch))
             })
         }
         
         func compile(device: MimicTransferables.DeviceType) {}
         func execute(dataSet: MimicTransferables.DataSet) -> [MimicTransferables.Tensor] { [] }
+        func retrieveGraphs() throws -> [MimicTransferables.Graph] { [] }
     }
     
     func testNext() async throws {
@@ -44,7 +45,7 @@ final class SerialBatchRunnerTests: XCTestCase {
         let expectedTensors = inputTensors[0].map { Tensor($0, shape: [1] + $0.shape) }
         let batchRunner = SerialBatchRunner(dataSet: dataSet, operation: TestOperation())
         var batchIndex = 0
-        while let outputs = await batchRunner.next() {
+        while let outputs = try await batchRunner.next() {
             XCTAssertEqual(outputs, [expectedTensors[batchIndex]])
             batchIndex += 1
         }
