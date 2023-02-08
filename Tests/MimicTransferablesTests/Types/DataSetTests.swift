@@ -1,5 +1,5 @@
 //
-//  Copyright 2022 Brian Keith Smith
+//  Copyright 2023 Brian Keith Smith
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -12,14 +12,30 @@
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
+//  
 //
-//  Created by Brian Smith on 6/22/22.
+//  Created by Brian Smith on 1/26/23.
 //
 
-import Foundation
+import XCTest
 import MimicTransferables
 
-protocol Executable {
-    func compile(device: DeviceType)
-    func execute(inputs: [Tensor], batchSize: Int) async -> [Tensor]
+final class DataSetTests: XCTestCase {
+    func testBatchCount() {
+        let dataSet = DataSet(inputTensor: Tensor( [Float]([
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+        ])),
+                              batchSize: 2)
+        
+        XCTAssertEqual(dataSet.batchCount, 5)
+    }
 }

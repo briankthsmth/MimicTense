@@ -1,5 +1,5 @@
 //
-//  Copyright 2022 Brian Keith Smith
+//  Copyright 2023 Brian Keith Smith
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -13,29 +13,31 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Created by Brian Smith on 6/22/22.
+//
+//  Created by Brian Smith on 2/3/23.
 //
 
 import Foundation
 import MimicTransferables
 
-final class InferenceOperation: Operational, Compilable {
-    init(inferenceGraph: InferenceGraphable) {
-        self.inferenceGraph = inferenceGraph
+final class TrainingOperation: Operational, Compilable {
+    init(trainingGraph: TrainingGraphable) {
+        self.trainingGraph = trainingGraph
     }
     
-    func compile(device: DeviceType) throws {
-        try inferenceGraph.compile(device: device)
+    func compile(device: MimicTransferables.DeviceType) throws {
+        try trainingGraph.compile(device: device)
     }
     
     func execute(batch: Int, dataSet: DataSet) async throws -> [Tensor]? {
         let inputs = dataSet.makeBatch(at: batch)
-        return try await inferenceGraph.execute(inputs: inputs, batchSize: dataSet.batchSize)
+        guard let lossLabels = dataSet.makeBatchLabels(at: batch) else { return nil }
+        return try await trainingGraph.execute(inputs: inputs, lossLables: lossLabels, batchSize: dataSet.batchSize)
     }
     
     func retrieveGraphs() throws -> [MimicTransferables.Graph] {
-        try inferenceGraph.retrieveGraphs()
+        try trainingGraph.retrieveGraphs()
     }
     
-    private let inferenceGraph: InferenceGraphable
+    private let trainingGraph: TrainingGraphable
 }

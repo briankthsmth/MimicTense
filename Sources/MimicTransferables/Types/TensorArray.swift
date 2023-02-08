@@ -18,6 +18,7 @@
 
 import Foundation
 
+///  A container for array of tensors that is transferable to other services.
 public struct TensorArray: Transferable {
     public typealias Index = Int
     
@@ -33,7 +34,7 @@ public struct TensorArray: Transferable {
     
     public var endIndex: Int {
         guard !isEmpty else { return -1 }
-        return rank == 4 ? tensors.reduce(0) { $0 + $1.shape[0] } : count
+        return rank > 1 ? tensors.reduce(0) { $0 + $1.shape[0] } : count
     }
     
     public var rank: Int {

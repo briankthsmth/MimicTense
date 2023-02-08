@@ -20,11 +20,13 @@ import Foundation
 import MLCompute
 import MimicTransferables
 
-// TODO: Handle optional values instead of force unwrapping them.
-
 /// Class to perform inference on a set of neural network graphs.
 /// 
-final class MlComputeInferenceGraph: InferenceGraphable, PlateformExecutionGraphable {    
+final class MlComputeInferenceGraph:
+    InferenceGraphable,
+    PlatformExecutionGraphable,
+    ModelInspectable
+{
     init(graphs: [Graph]) throws {
         self.graphs = graphs
         
@@ -34,12 +36,12 @@ final class MlComputeInferenceGraph: InferenceGraphable, PlateformExecutionGraph
         platformInferencGraph.addInputs(converted.inputs.makeInputDictionary(startingWith: Constant.inputPrefix))
     }
     
-    func compile(device: DeviceType) {
+    func compile(device: DeviceType) throws {
         guard platformInferencGraph.layers.count > 0 else { return }
         platformInferencGraph.compile(device: MLCDevice(type: device.mlcDeviceType)!)
     }
     
-    func execute(inputs: [Tensor], batchSize: Int) async -> [Tensor] {
+    func execute(inputs: [Tensor], batchSize: Int) async throws -> [Tensor] {
         return await withCheckedContinuation { continuation in
             let inputsData = inputs
                 .map { $0.makeMlcTensorData() }
@@ -50,13 +52,17 @@ final class MlComputeInferenceGraph: InferenceGraphable, PlateformExecutionGraph
             }
         }
     }
-    
+        
     func retrieveOutputs() -> [Tensor] {
         outputTensors.map { convert(from: $0) }
     }
     
     func retrieveOutputTensor(at index: Int) -> Tensor {
         convert(from: outputTensors[index])
+    }
+    
+    func retrieveGraphs() throws -> [Graph] {
+        return graphs
     }
     
     // MARK: Private Interface

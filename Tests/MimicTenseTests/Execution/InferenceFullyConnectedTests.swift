@@ -23,7 +23,7 @@ final class InferenceFullyConnectedTests: XCTestCase {
     func testFullyConnectedGraph() async throws {
         let inference = try await Inference<Float> {
             InputDataSet(batchSize: 1) {
-                InputData { Tensor<Float>([2, 2]) }
+                InputData { Tensor<Float>([[2, 2]]) }
             }
             Sequential<Float> {
                 FullyConnected(weights: Tensor<Float>([[1, 0.5]]),

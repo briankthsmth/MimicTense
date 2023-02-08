@@ -12,17 +12,13 @@
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
 //
-//  Created by Brian Smith on 9/29/22.
+//  Created by Brian Smith on 5/3/22.
 //
 
 import Foundation
+import MimicTransferables
 
-public enum ComputeEngineError: Error {
-    case layerConversion
-    case deviceNotAvailable
-    case invalidWeights
-    case invalidOutput
-    case missingLabels
+protocol InferenceGraphable: AnyObject, ModelInspectable, Compilable, InferenceExecutable {
+    func retrieveOutputs() -> [Tensor]
 }

@@ -23,9 +23,9 @@ final class InferenceArithmeticTests: XCTestCase {
     func testArithmeticGraph() async throws {
         let inference = try await Inference<Float> {
             InputDataSet(batchSize: 1) {
-                InputData { Tensor<Float>([1, 1, 1]) }
-                InputData { Tensor<Float>([1, 1, 1]) }
-                InputData { Tensor<Float>([1, 1, 1]) }
+                InputData { Tensor<Float>([[1, 1, 1]]) }
+                InputData { Tensor<Float>([[1, 1, 1]]) }
+                InputData { Tensor<Float>([[1, 1, 1]]) }
             }
             Sequential<Float> {
                 Arithmetic<Float>(.add) {

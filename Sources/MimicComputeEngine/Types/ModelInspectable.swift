@@ -1,5 +1,5 @@
 //
-//  Copyright 2022 Brian Keith Smith
+//  Copyright 2023 Brian Keith Smith
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -13,10 +13,13 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Created by Brian Smith on 6/22/22.
+//
+//  Created by Brian Smith on 1/21/23.
 //
 
 import Foundation
+import MimicTransferables
 
-protocol Operational: Executable {
+protocol ModelInspectable {
+    func retrieveGraphs() throws -> [Graph]
 }

@@ -23,37 +23,59 @@ import Distributed
 public distributed actor Session {
     public typealias ActorSystem = LocalTestingDistributedActorSystem
     
-    public enum Kind: String, Codable {
+    /// The kind of operation the session will perform.
+    public enum Kind: Codable {
+        ///  An inference session type.
         case inference
-        case training
+        /// A training session type.
+        /// - Parameters:
+        ///   - lossFunction: The type of loss function to use in training.
+        ///   - optimizer: The type of optimizer to use in training.
+        case training(lossFunction: LossFunctionType, optimizer: OptimizerType)
     }
     
     // MARK: Local Interface
-    init(kind: Kind, graphs: [Graph], dataSet: DataSet, platformFactory: PlatformFactory, actorSystem: ActorSystem) throws {
+    /// Creates a new session that executes a NN model on a distributed actor.
+    ///
+    init(kind: Kind,
+         graphs: [Graph],
+         dataSet: DataSet,
+         platformFactory: PlatformFactory,
+         actorSystem: ActorSystem) throws
+    {
         self.actorSystem = actorSystem
         self.dataSet = dataSet
         switch kind {
         case .inference:
             operation = try InferenceOperation(inferenceGraph: platformFactory.makeInferenceGraph(graphs: graphs))
-        case .training:
-            operation = try InferenceOperation(inferenceGraph: platformFactory.makeInferenceGraph(graphs: graphs))
+        case let .training(lossFunction, optimizer):
+            guard let lossLabels = dataSet.batchLabelsPlaceholder else { throw ComputeEngineError.missingLabels }
+            let trainingGraph = try platformFactory.makeTrainingGraph(graphs: graphs,
+                                                          lossLabelTensors: lossLabels,
+                                                          lossFunction: lossFunction,
+                                                          optimizer: optimizer)
+            operation = TrainingOperation(trainingGraph: trainingGraph)
         }
     }
     
     // MARK: Remote Interface
-    public distributed func compile(device: DeviceType) {
-        operation.compile(device: device)
+    public distributed func compile(device: DeviceType) throws {
+        try operation.compile(device: device)
     }
     
-    public distributed func executeNext() async -> [Tensor]? {
+    public distributed func executeNext() async throws -> [Tensor]? {
         let batchRunner = self.batchRunner ?? {
             let runner = SerialBatchRunner(dataSet: dataSet, operation: operation)
             self.batchRunner = runner
             return runner
         } ()
-        let outputs = await batchRunner.next()
+        let outputs = try await batchRunner.next()
         if outputs == nil { self.batchRunner = nil }
         return outputs
+    }
+    
+    public distributed func retreiveGraphs() throws -> [Graph] {
+        try operation.retrieveGraphs()
     }
         
     // MARK: Private Interface

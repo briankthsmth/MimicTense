@@ -22,101 +22,62 @@ import XCTest
 import MimicTransferables
 
 final class MlComputeTrainingGraphTests: XCTestCase {
-    let expectedWeights: [Float] = [0.47]
-    let batchSize: Int = 2
-    var batchIterations: Int!
+    struct Constant {
+        static let learningRate: Float = 0.01
+    }
     
-    let inputChannels = 1
-    let outputChannels = 1
-    
-    let trainingSamples: [[Float]] = [
-        [1.5],
-        [2.3],
-        [-4.4],
-        [5.2],
-        [-0.8],
-        [2.7],
-        [0.12],
-        [-3.12],
-        [2.8],
-        [4.2]
-    ]
-    var trainingResults: [Float]!
+    let model = LinearModel()
+    var trainingGraph: MlComputeTrainingGraph!
     
     override func setUpWithError() throws {
-        batchIterations = trainingSamples.count / batchSize
+        trainingGraph = try MlComputeTrainingGraph(graphs: model.graphs,
+                                                   lossLabelTensors: [Tensor(shape: [
+                                                    LinearModel.Constant.batchSize,
+                                                    LinearModel.Constant.outputChannels
+                                                   ],
+                                                                             dataType: .float32)],
+                                                   lossFunction: .meanSquaredError,
+                                                   optimizer: .rootMeanSquare(learningRate: Constant.learningRate))
         
-        trainingResults = trainingSamples.map {
-            $0.enumerated().reduce(0) { $0 + $1.element * expectedWeights[$1.offset] }
-        }
-    }
-    
-    func testTraining() async throws {
-        let weights = Tensor(shape: [outputChannels, inputChannels],
-                             dataType: .float32,
-                             randomInitializerType: .uniform)
-        let layer = Layer(label: "TestLayer",
-                          kind: .fullyConnected,
-                          dataType: .float32,
-                          inputFeatureChannelCount: inputChannels,
-                          outputFeatureChannelCount: outputChannels,
-                          weights: weights)
-        let graph = Graph(kind: .sequential,
-                          dataType: .float32,
-                          inputTensor: Tensor(shape: [batchSize, inputChannels], dataType: .float32),
-                          layers: [layer],
-                          featureChannelPosition: .notApplicable)
-        
-        let trainingGraph = try MlComputeTrainingGraph(graphs: [graph],
-                                                       lossLabelTensors: [Tensor(shape: [batchSize, outputChannels],
-                                                                                 dataType: .float32)],
-                                                       lossFunction: .meanSquaredError,
-                                                       optimizer: .rootMeanSquare(learningRate: 0.01))
         try trainingGraph.compile(device: .cpu)
-        for _ in 0 ..< 10 {
-            for batch in 0 ..< batchIterations {
-                let batchStart = 2 * batch
-                let batchEnd = batchStart + batchSize
-                let batchSamples = Array(trainingSamples[batchStart ..< batchEnd])
-                let batchResults = Array(trainingResults[batchStart ..< batchEnd])
-                try await trainingGraph.execute(inputs: [Tensor(batchSamples)],
-                                                lossLables: [Tensor(batchResults)],
-                                                batchSize: batchSize)
-            }
-        }
-        let trainedWeights = try trainingGraph.copyWeights(for: layer)
-        let trainedVector = try XCTUnwrap(trainedWeights.extract(Float.self) as? [[Float]])
-        for (expectedWeight, weight) in zip(expectedWeights, trainedVector[0]) {
-            XCTAssertEqual(weight, expectedWeight, accuracy: 0.01)
-        }
     }
     
-    func testCopyWeightsForLayer() throws {
-        let weightsVector = [Float]([0.4, 0.8])
-        let weights = Tensor(shape: [2, 1], data: weightsVector.makeBuffer(), dataType: .float32)
-        let layer = Layer(label: "TestLayer",
-                          kind: .fullyConnected,
-                          dataType: .float32,
-                          inputFeatureChannelCount: 2,
-                          outputFeatureChannelCount: 1,
-                          weights: weights)
-        let graph = Graph(kind: .sequential,
-                          dataType: .float32,
-                          inputTensor: Tensor(shape: [1, 2], dataType: .float32),
-                          layers: [layer],
-                          featureChannelPosition: .notApplicable)
-        let trainingGraph = try MlComputeTrainingGraph(graphs: [graph],
-                                                       lossLabelTensors: [Tensor(shape: [1,1],
-                                                                                 dataType: .float32)],
-                                                       lossFunction: .meanSquaredError,
-                                                       optimizer: .rootMeanSquare(learningRate: 0.01))
-        try trainingGraph.compile(device: .gpu)
+    func testRetrieveTrainedLayer() async throws {
+        try await train()
+        let layerLabel = try XCTUnwrap(model.graphs.first?.layers.first?.label)
+        let layer = try trainingGraph.retrieveLayer(by: layerLabel)
+        let weights = try XCTUnwrap(layer.weights?.extract(Float.self) as? [[Float]])
+        let biases = try XCTUnwrap(layer.biases?.extract(Float.self) as? [Float])
+        XCTAssertEqual(weights.first?.first ?? 0, LinearModel.Constant.slope, accuracy: 0.01)
+        XCTAssertEqual(biases.first ?? 0, LinearModel.Constant.intercept, accuracy: 0.01)
+    }
         
-        let copiedWeights = try trainingGraph.copyWeights(for: layer)
-        XCTAssertEqual(copiedWeights.shape, [1, 2])
-        let copiedVector = try XCTUnwrap(copiedWeights.extract(Float.self) as? [[Float]])
-        zip(copiedVector[0], weightsVector).forEach {
-            XCTAssertEqual($0.0, $0.1)
+    func testRetrieveGraphs() async throws {
+        try await train()
+        
+        let graphs = try trainingGraph.retrieveGraphs()
+        XCTAssertEqual(graphs.count, model.graphs.count)
+        let layers = try XCTUnwrap(graphs.first?.layers)
+        let modelLayers = try XCTUnwrap(model.graphs.first?.layers)
+        XCTAssertEqual(layers.count, modelLayers.count)
+        let layer = try XCTUnwrap(layers.first)
+        let modelLayer = try XCTUnwrap(modelLayers.first)
+        let weights = try XCTUnwrap(layer.weights?.extract(Float.self) as? [[Float]])
+        let biases = try XCTUnwrap(layer.biases?.extract(Float.self) as? [Float])
+        XCTAssertEqual(layer.kind, modelLayer.kind)
+        XCTAssertEqual(weights.first?.first ?? 0, LinearModel.Constant.slope, accuracy: 0.01)
+        XCTAssertEqual(biases.first ?? 0, LinearModel.Constant.intercept, accuracy: 0.01)
+    }
+    
+    func train() async throws {
+        for _ in 0 ..< 20 {
+            for batch in 0 ..< model.dataSet.batchCount {
+                let batchSamples = model.dataSet.makeBatch(at: batch)
+                let batchLabels = try XCTUnwrap(model.dataSet.makeBatchLabels(at: batch))
+                let _ = try await trainingGraph.execute(inputs: batchSamples,
+                                                        lossLables: batchLabels,
+                                                        batchSize: LinearModel.Constant.batchSize)
+            }
         }
     }
 }

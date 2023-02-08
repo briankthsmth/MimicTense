@@ -23,7 +23,11 @@ import MLCompute
 
 /// Class to  train a set of neural network graph.
 ///
-final class MlComputeTrainingGraph: TrainingGraphable, PlateformExecutionGraphable {
+final class MlComputeTrainingGraph:
+    TrainingGraphable,
+    PlatformExecutionGraphable,
+    ModelInspectable
+{
     /// Initializer for training graph.
     ///
     ///  - Parameters:
@@ -40,12 +44,13 @@ final class MlComputeTrainingGraph: TrainingGraphable, PlateformExecutionGraphab
         self.lossFunction = lossFunction
         self.optimizer = optimizer
         
-        let platformGraphs = try Self.makePlatformGraphs(from: graphs)
-        outputTensors = platformGraphs.outputs
-        platformTrainingGraph = MLCTrainingGraph(graphObjects: platformGraphs.graphs,
+        let product = try Self.makePlatformGraphs(from: graphs)
+        platformGraphs = product.graphs
+        outputTensors = product.outputs
+        platformTrainingGraph = MLCTrainingGraph(graphObjects: product.graphs,
                                                  lossLayer: lossFunction.makeMlcLossLayer(),
                                                  optimizer: optimizer.makeMlcOptimizer())
-        platformTrainingGraph.addInputs(platformGraphs.inputs.makeInputDictionary(startingWith: Constant.inputPrefix),
+        platformTrainingGraph.addInputs(product.inputs.makeInputDictionary(startingWith: Constant.inputPrefix),
                                         lossLabels: lossLabelTensors.map { $0.makeMlcTensor() }.makeInputDictionary(startingWith: Constant.lossLabelPrefix))
     }
     
@@ -66,8 +71,10 @@ final class MlComputeTrainingGraph: TrainingGraphable, PlateformExecutionGraphab
     ///    - inputs: Tensors with data for each input in the graphs.
     ///    - lossLables: Tensors with data for each graph.
     ///    - batchSize: The size of the batchs in the tensor data.
-    func execute(inputs: [Tensor], lossLables: [Tensor], batchSize: Int) async throws {
-        let _: Void = try await withCheckedThrowingContinuation{ continuation in
+    ///
+    /// - Returns: Array of output tensors for each graph in the model.
+    func execute(inputs: [Tensor], lossLables: [Tensor], batchSize: Int) async throws -> [Tensor] {
+        return try await withCheckedThrowingContinuation{ continuation in
             let inputsData = inputs
                 .map { $0.makeMlcTensorData() }
                 .makeInputDictionary(startingWith: Constant.inputPrefix)
@@ -78,33 +85,47 @@ final class MlComputeTrainingGraph: TrainingGraphable, PlateformExecutionGraphab
             platformTrainingGraph.execute(inputsData: inputsData,
                                           lossLabelsData: lossLabelsData,
                                           lossLabelWeightsData: nil,
-                                          batchSize: batchSize) { _, error, _ in
+                                          batchSize: batchSize) { tensor, error, _ in
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
                 }
-                continuation.resume()
+                guard let tensor = tensor else {
+                    continuation.resume(throwing: ComputeEngineError.invalidOutput)
+                    return
+                }
+                continuation.resume(returning: [tensor.makeTensor()])
             }
         }
     }
     
-    func copyWeights(for layer: Layer) throws -> Tensor {
+    /// Retrieves all the graphs and their layers from device memory.
+    ///
+    /// Retrieves all of the graphs along with the  data that may have been updated during
+    ///  training.
+    /// - Returns: All of the graphs for the model used in training.
+    func retrieveGraphs() throws -> [Graph] {
+        return try platformGraphs.map { try $0.makeGraph() }
+    }
+    
+    /// Retrieve the layer from the device memory identified by the given label.
+    ///
+    /// This method retrieves a layer by name and it will pull any data from device memory  that was
+    /// updated during training for the layer. This method will throw an exception if the layer
+    /// does not exist for the given label.
+    ///
+    /// - Parameters:
+    /// - label: A string that identifies the layer.
+    ///
+    /// - Returns: The layer corrisponding to the label.
+    func retrieveLayer(by label: String) throws -> Layer {
         platformTrainingGraph.synchronizeUpdates()
         guard
-            let layerLabel = layer.label,
-            let platformLayer = platformTrainingGraph.layers.first(where: { $0.label.contains(layerLabel) })
+            let platformLayer = platformTrainingGraph.layers.first(where: { $0.label.contains(label) })
         else {
             throw ComputeEngineError.layerConversion
         }
-        switch platformLayer {
-        case let fullyConnectedLayer as MLCFullyConnectedLayer:
-            let weights = fullyConnectedLayer.weights.makeTensor()
-            let reshape = Array(weights.shape[1 ..< weights.shape.count])
-            let reshapedWeights = Tensor(weights, shape: reshape)
-            return reshapedWeights
-        default:
-            return Tensor(shape: [], dataType: .float32)
-        }
+        return try platformLayer.makeLayer()
     }
     
     // Mark: Private Interface
@@ -117,6 +138,7 @@ final class MlComputeTrainingGraph: TrainingGraphable, PlateformExecutionGraphab
     private let lossFunction: LossFunctionType
     private let optimizer: OptimizerType
     
+    private let platformGraphs: [MLCGraph]
     private let platformTrainingGraph: MLCTrainingGraph
     private let outputTensors: [MLCTensor]
 }

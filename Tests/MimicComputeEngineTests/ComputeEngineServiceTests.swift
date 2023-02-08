@@ -23,7 +23,6 @@ import MimicTransferables
 
 final class ComputeEngineServiceTests: XCTestCase {
     
-    let model = ArithmeticModel()
     var actorSystem = LocalTestingDistributedActorSystem()
     var service: ComputeEngineService!
     
@@ -31,18 +30,36 @@ final class ComputeEngineServiceTests: XCTestCase {
         service = ComputeEngineService(actorSystem: actorSystem)
     }
     
-    func testExecuteNext() async throws {
-        let session = try await service.makeSession(kind: .inference,
-                                                    graphs: model.graphs,
-                                                    dataSet: model.multiBatchDataSet)
-        try await session.compile(device: .gpu)
-        var resultIndex = 0
-        while let outputs = try await session.executeNext() {
+    func testInferenceExecution() async throws {
+        let model = ArithmeticModel()
+        try await runExecutionTest(for: model, kind: .inference, device: .gpu, testHandler: { batch, outputs in
             XCTAssertEqual(outputs.count, 1)
-            try XCTSkipUnless(outputs.count > 0, "Can not continue testing with empty array.")
-            assertEqual(resultTensor: outputs[0], expectedVector: model.expectedVector(at: resultIndex))
-            resultIndex += 1
+            let result = try XCTUnwrap(outputs.first)
+            assertEqual(resultTensor: result, expectedVector: model.expectedVector(at: batch))
+        })
+    }
+    
+    func testTrainingExecution() async throws {
+        let model = LinearModel()
+        let kind = Session.Kind.training(lossFunction: .meanSquaredError,
+                                         optimizer: .rootMeanSquare(learningRate: 0.01))
+        try await runExecutionTest(for: model, kind: kind, device: .cpu) { _, outputs in
+            XCTAssertEqual(outputs.count, 1)
+            let result = try XCTUnwrap(outputs.first)
+            XCTAssertEqual(result.shape, [2, 1])
         }
-        XCTAssertEqual(resultIndex, model.multiBatchDataSet.batchCount)
+    }
+    
+    func runExecutionTest(for model: TestModel, kind: Session.Kind, device: DeviceType, testHandler: (Int, [Tensor]) throws -> Void) async throws {
+        let session = try await service.makeSession(kind: kind,
+                                                    graphs: model.graphs,
+                                                    dataSet: model.dataSet)
+        try await session.compile(device: device)
+        var batch = 0
+        while let outputs = try await session.executeNext() {
+            try testHandler(batch, outputs)
+            batch += 1
+        }
+        XCTAssertEqual(batch, model.dataSet.batchCount)
     }
 }

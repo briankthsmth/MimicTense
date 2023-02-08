@@ -12,17 +12,13 @@
 //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
-//  
 //
-//  Created by Brian Smith on 9/29/22.
+//  Created by Brian Smith on 6/22/22.
 //
 
 import Foundation
+import MimicTransferables
 
-public enum ComputeEngineError: Error {
-    case layerConversion
-    case deviceNotAvailable
-    case invalidWeights
-    case invalidOutput
-    case missingLabels
+protocol InferenceExecutable {
+    func execute(inputs: [Tensor], batchSize: Int) async throws-> [Tensor]
 }
