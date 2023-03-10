@@ -12,6 +12,10 @@ final class TrainLinearRegressionTests: XCTestCase {
     struct Constant {
         static let slope: Float = 0.47
         static let intercept: Float = 0.7
+        
+        static let batchSize = 2
+        static let learningRate: Float = 0.01
+        static let epochs = 10
     }
     
     let inputs: [[Float]] = [
@@ -27,16 +31,18 @@ final class TrainLinearRegressionTests: XCTestCase {
         [-1.0]
     ]
     var labels: [[Float]]!
+    var numberOfBatches: Int!
     
     override func setUpWithError() throws {
         labels = inputs.map { $0.map { Constant.slope * $0 + Constant.intercept } }
+        numberOfBatches = inputs.count / Constant.batchSize
     }
     
     func testTrainLinearRegression() async throws {
         let train = try await Train<Float>(lossFunction: .meanSquaredError,
-                                    optimizer: .rootMeanSquare(learningRate: 0.01))
+                                           optimizer: .rootMeanSquare(learningRate: Constant.learningRate))
         {
-            TrainingDataSet(batchSize: 2) {
+            TrainingDataSet(batchSize: Constant.batchSize) {
                 TrainingData {
                     LabelData {
                         Tensor(labels)
@@ -59,5 +65,13 @@ final class TrainLinearRegressionTests: XCTestCase {
         }
         .compile(device: .gpu)
         
+        var outputCount = 0
+        for try await outputStream in train.outputStream {
+            XCTAssertEqual(outputStream.count, 1)
+            let batchOutput = try XCTUnwrap(outputStream.first)
+            XCTAssertEqual(batchOutput.shape, [2, 1])
+            outputCount += 1
+        }
+        XCTAssertEqual(outputCount, numberOfBatches)
     }
 }
