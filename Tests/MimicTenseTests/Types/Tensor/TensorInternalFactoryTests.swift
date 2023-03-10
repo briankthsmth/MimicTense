@@ -30,18 +30,25 @@ final class TensorInternalFactoryTests: XCTestCase {
         XCTAssertEqual(tensor.rank1Data, vector)
     }
     
-    func testTranferableConversion() {
+    func testTranferableConversion() throws {
         let tensor = MimicTense.Tensor(vector)
         let expectectedTensor = MimicTransferables.Tensor(vector)
-        let transferableTensor = try? tensor.makeTransferable()
-        XCTAssertEqual(transferableTensor, expectectedTensor)
+        let transformedTensor = try tensor.makeTransferable()
+        XCTAssertEqual(transformedTensor, expectectedTensor)
     }
     
-    func testPlaceholderTransferableConversion() {
+    func testTransferableConversionWithPlaceholder() throws {
         let tensor = MimicTense.Tensor<Float>(shape: [3, 2])
         let expectedTensor = MimicTransferables.Tensor(shape: [3, 2], dataType: .float32)
-        let transferableTensor = try? tensor.makeTransferable()
-        XCTAssertEqual(transferableTensor, expectedTensor)
+        let transformedTensor = try? tensor.makeTransferable()
+        XCTAssertEqual(transformedTensor, expectedTensor)
+    }
+    
+    func testTransferableConversionWithRandomInitializer() throws {
+        let tensor = MimicTense.Tensor<Float>(shape: [3, 2], randomizer: .uniformDelayed)
+        let expectedTensor = MimicTransferables.Tensor(shape: [3, 2], dataType: .float32, randomInitializerType: .uniform)
+        let transformedTensor = try tensor.makeTransferable()
+        XCTAssertEqual(transformedTensor, expectedTensor)
     }
     
     func testMakeWithRandomData() throws {

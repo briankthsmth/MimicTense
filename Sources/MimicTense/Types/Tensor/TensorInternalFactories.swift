@@ -48,7 +48,8 @@ extension Tensor {
     func makeTransferable() throws -> MimicTransferables.Tensor {
         return MimicTransferables.Tensor(shape: shape,
                                          data: data.makeBuffer(),
-                                         dataType: DataType(NativeType.self))
+                                         dataType: DataType(NativeType.self),
+                                         randomInitializerType: randomizer?.makeTransferable())
     }
     
     static func makeFillUniform(shape: [Int], in range: ClosedRange<NativeType>) -> MimicTense.Tensor<NativeType> {

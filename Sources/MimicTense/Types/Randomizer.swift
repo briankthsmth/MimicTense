@@ -18,8 +18,16 @@
 //
 
 import Foundation
+import MimicTransferables
 
 public enum Randomizer {
     /// A uniform random algorithm is used to generate data when needed.
     case uniformDelayed
+    
+    internal func makeTransferable() -> MimicTransferables.RandomInitializerType {
+        switch self {
+        case .uniformDelayed:
+            return .uniform
+        }
+    }
 }
