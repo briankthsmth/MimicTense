@@ -38,7 +38,7 @@ public distributed actor Session {
     /// Creates a new session that executes a NN model on a distributed actor.
     ///
     init(kind: Kind,
-         graphs: [Graph],
+         graph: Graph,
          dataSet: DataSet,
          platformFactory: PlatformFactory,
          actorSystem: ActorSystem) throws
@@ -47,11 +47,11 @@ public distributed actor Session {
         self.dataSet = dataSet
         switch kind {
         case .inference:
-            operation = try InferenceOperation(inferenceGraph: platformFactory.makeInferenceGraph(graphs: graphs))
+            operation = try InferenceOperation(inferenceGraph: platformFactory.makeInferenceGraph(graph: graph))
         case let .training(lossFunction, optimizer):
             guard let lossLabels = dataSet.batchLabelsPlaceholder else { throw ComputeEngineError.missingLabels }
-            let trainingGraph = try platformFactory.makeTrainingGraph(graphs: graphs,
-                                                          lossLabelTensors: lossLabels,
+            let trainingGraph = try platformFactory.makeTrainingGraph(graph: graph,
+                                                          lossLabelTensor: lossLabels,
                                                           lossFunction: lossFunction,
                                                           optimizer: optimizer)
             operation = TrainingOperation(trainingGraph: trainingGraph)

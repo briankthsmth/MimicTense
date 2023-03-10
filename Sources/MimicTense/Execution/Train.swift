@@ -1,5 +1,5 @@
 //
-//  Copyright 2022 Brian Keith Smith
+//  Copyright 2023 Brian Keith Smith
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -13,38 +13,41 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Created by Brian Smith on 4/27/22.
+//
+//  Created by Brian Smith on 2/8/23.
 //
 
 import Foundation
 import MimicTransferables
 
-/// Class to build an inference operation.
-public class Inference<NativeType: NeuralNativeType>:
-    Compilable, Executable
-{
+/// Class to build a training operation.
+public class Train<NativeType: NeuralNativeType>: Compilable, Executable {
     /// Property to an output stream for tensor results from each batch.
     public var outputStream: AsyncThrowingStream<[Tensor<NativeType>], Error> {
         return sessionRunner.makeOutputStream()
     }
     
-    /// Initializer that uses a result builder closure to build an inference operation from a data set and graphs.
+    /// Initializer that uses a result builder closure to build an training operation from a data set and graphs.
     ///
     ///  - Parameters:
     ///    - make: Result builder closure that builds a data set and graphs.
-    public init(@ExecutionGraphBuilder _ make: () -> (dataSet: any MimicTense.DataBatchable, graph: any Graphable)) {
+    public init(lossFunction: LossFunctionType,
+                optimizer: OptimizerType,
+                @ExecutionGraphBuilder _ make: () -> (dataSet: any MimicTense.DataBatchable, graph: any Graphable))
+    {
         let input = make()
-        sessionRunner = SessionRunner(kind: .inference,
+        sessionRunner = SessionRunner(kind: .training(lossFunction: lossFunction,
+                                                      optimizer: optimizer),
                                       dataSet: input.dataSet,
                                       graph: input.graph)
     }
-
-    /// Compiles the graph on to the given device for inference.
+    
+    /// Compiles the graph on to the given device for training.
     ///
     /// - Parameters:
     ///   - device: The device type.
     ///
-    /// - Returns: A reference to the Inference object.
+    /// - Returns: A reference to the Train object.
     public func compile(device: Device) async throws -> Self {
         try await sessionRunner.compile(device: device)
         return self

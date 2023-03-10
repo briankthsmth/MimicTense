@@ -32,7 +32,7 @@ final class TrainingOperation: Operational, Compilable {
     func execute(batch: Int, dataSet: DataSet) async throws -> [Tensor]? {
         let inputs = dataSet.makeBatch(at: batch)
         guard let lossLabels = dataSet.makeBatchLabels(at: batch) else { return nil }
-        return try await trainingGraph.execute(inputs: inputs, lossLables: lossLabels, batchSize: dataSet.batchSize)
+        return try await trainingGraph.execute(inputs: inputs, lossLables: [lossLabels], batchSize: dataSet.batchSize)
     }
     
     func retrieveGraphs() throws -> [MimicTransferables.Graph] {

@@ -20,10 +20,10 @@ import XCTest
 import MimicTransferables
 @testable import MimicTense
 
-final class TensorInternalTests: XCTestCase {
+final class TensorInternalFactoryTests: XCTestCase {
     let vector = [Float]([1, 2, 3])
 
-    func testMakeFromNeuralCoreTensor() throws {
+    func testMakeFromTransferableTensor() throws {
         let transferableTensor = MimicTransferables.Tensor(vector)
         let tensor: MimicTense.Tensor<Float> = try MimicTense.Tensor<Float>.make(from: transferableTensor)
         XCTAssertEqual(tensor.shape, transferableTensor.shape)
@@ -42,5 +42,12 @@ final class TensorInternalTests: XCTestCase {
         let expectedTensor = MimicTransferables.Tensor(shape: [3, 2], dataType: .float32)
         let transferableTensor = try? tensor.makeTransferable()
         XCTAssertEqual(transferableTensor, expectedTensor)
+    }
+    
+    func testMakeWithRandomData() throws {
+        let shape = [2, 3]
+        let tensor = MimicTense.Tensor<Float>.makeFillUniform(shape: shape, in: 0.0 ... 1.0)
+        XCTAssertEqual(tensor.shape, shape)
+        XCTAssertNotNil(tensor.rank2Data)
     }
 }

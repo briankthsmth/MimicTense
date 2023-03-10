@@ -1,5 +1,5 @@
 //
-//  Copyright 2022 Brian Keith Smith
+//  Copyright 2023 Brian Keith Smith
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -14,19 +14,20 @@
 //  limitations under the License.
 //
 //
-//  Created by Brian Smith on 10/4/22.
+//  Created by Brian Smith on 2/28/23.
 //
 
-import Foundation
+import XCTest
+import MimicCore
 
-
-public protocol SupportedNativeType: Random {
-    static var defaultValue: Self { get }
-    static var memoryLayoutSize: Int { get }
-    init()
-}
-
-extension Float: SupportedNativeType {
-    public static var defaultValue: Float { 0 }
-    public static var memoryLayoutSize: Int { MemoryLayout<Self>.size }
+final class SupportedNativeTypeTests: XCTestCase {
+    struct Mock<NativeType: SupportedNativeType> {
+        let value: NativeType
+    }
+    
+    func testMultiplicationWithFloats() {
+        let mock1 = Mock(value: Float(2))
+        let mock2 = Mock(value: Float(3))
+        XCTAssertEqual(mock1.value * mock2.value, 6, accuracy: 0.001)
+    }
 }

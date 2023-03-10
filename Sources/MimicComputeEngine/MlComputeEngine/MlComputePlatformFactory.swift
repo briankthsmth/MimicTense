@@ -20,17 +20,17 @@ import Foundation
 import MimicTransferables
 
 struct MlComputePlatformFactory: PlatformFactory {
-    func makeInferenceGraph(graphs: [Graph]) throws -> InferenceGraphable {
-        try MlComputeInferenceGraph(graphs: graphs)
+    func makeInferenceGraph(graph: Graph) throws -> InferenceGraphable {
+        try MlComputeInferenceGraph(graphs: [graph])
     }
     
-    func makeTrainingGraph(graphs: [Graph],
-                           lossLabelTensors: [Tensor],
+    func makeTrainingGraph(graph: Graph,
+                           lossLabelTensor: Tensor,
                            lossFunction: LossFunctionType,
                            optimizer: OptimizerType) throws -> TrainingGraphable
     {
-        try MlComputeTrainingGraph(graphs: graphs,
-                                   lossLabelTensors: lossLabelTensors,
+        try MlComputeTrainingGraph(graphs: [graph],
+                                   lossLabelTensors: [lossLabelTensor],
                                    lossFunction: lossFunction,
                                    optimizer: optimizer)
     }

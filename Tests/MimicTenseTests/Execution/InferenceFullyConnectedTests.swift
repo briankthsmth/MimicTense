@@ -22,7 +22,7 @@ import MimicTense
 final class InferenceFullyConnectedTests: XCTestCase {
     func testFullyConnectedGraph() async throws {
         let inference = try await Inference<Float> {
-            InputDataSet(batchSize: 1) {
+            InferenceDataSet(batchSize: 1) {
                 InputData { Tensor<Float>([[2, 2]]) }
             }
             Sequential<Float> {

@@ -18,11 +18,13 @@
 
 import Foundation
 
-public struct ArrayDataSet<NativeType: NeuralNativeType>: DataSet {
+public struct ArrayDataSet<NativeType: NeuralNativeType>: DataBatchable {
     public let batchSize: Int
-    public var inputTensors: [[Tensor<NativeType>]] {
-        [[tensor]]
+    public var inputTensors: [Tensor<NativeType>] {
+        [tensor]
     }
+    
+    public var labels: Tensor<NativeType>? { nil }
     
     public init(data: [NativeType]) {
         self.batchSize = 1

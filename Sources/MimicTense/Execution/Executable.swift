@@ -21,7 +21,7 @@ import MimicCore
 import MimicTransferables
 
 protocol Executable {
-    associatedtype NativeType: SupportedNativeType & Equatable
+    associatedtype NativeType: NeuralNativeType
     
     var outputStream: AsyncThrowingStream<[Tensor<NativeType>], Error> { get }
 }

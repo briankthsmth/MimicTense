@@ -22,23 +22,23 @@ import MimicTransferables
 
 final class DataSetBatchTests: XCTestCase {
     let testTensors = [
-        [
-            Tensor([Float]([2, 1])), 
-            Tensor([Float]([4, 3])),
-            Tensor([Float]([6, 5])),
-            Tensor([Float]([8, 7]))
-        ],
-        [
-            Tensor([Float]([8, 9])),
-            Tensor([Float]([10, 11])),
-            Tensor([Float]([12, 13])),
-            Tensor([Float]([14, 15]))
-        ]
+        Tensor([[Float]]([
+            [2, 1],
+            [4, 3],
+            [6, 5],
+            [8, 7]
+        ])),
+        Tensor([[Float]]([
+            [8, 9],
+            [10, 11],
+            [12, 13],
+            [14, 15]
+        ]))
     ]
     var dataSet: DataSet!
     
     override func setUpWithError() throws {
-        dataSet = DataSet(inputTensors: testTensors, labels: testTensors, batchSize: 2)
+        dataSet = DataSet(inputTensors: testTensors, labels: testTensors[0], batchSize: 2)
     
     }
     
@@ -71,16 +71,14 @@ final class DataSetBatchTests: XCTestCase {
     
     func testMakeBatchLabels() throws {
         let batchLabels = dataSet.makeBatchLabels(at: 0)
-        let expectedLabels = [dataSet.tensors[0][0...1], dataSet.tensors[1][0...1]]
+        let expectedLabels = dataSet.tensors[0][0...1]
         
         XCTAssertEqual(batchLabels, expectedLabels)
     }
     
     func testLabelsBatchPlaceholder() throws {
-        let expectedBatchLabels = [
-            Tensor(shape: [2,2], dataType: .float32),
-            Tensor(shape: [2,2], dataType: .float32)
-        ]
+        let expectedBatchLabels = Tensor(shape: [2,2], dataType: .float32)
+            
         XCTAssertEqual(dataSet.batchLabelsPlaceholder, expectedBatchLabels)
     }
 }

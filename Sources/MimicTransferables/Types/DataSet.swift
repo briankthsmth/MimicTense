@@ -20,10 +20,10 @@ import Foundation
 
 /// Transferable type for datasets used in inference and training.
 public struct DataSet: Transferable {
-    /// An array of tensors for each graph's inputs in a model.
+    /// An array of tensors for each input.
     public let tensors: [Tensor]
-    /// An array of tensors for each graph's training labels in a model.
-    public let labels: [Tensor]?
+    /// A tensor with a graph's training labels.
+    public let labels: Tensor?
     /// The size of a batch of data.
     public let batchSize: Int
     
@@ -41,7 +41,7 @@ public struct DataSet: Transferable {
     public init(inputTensor: Tensor, labels: Tensor? = nil, batchSize: Int) {
         tensors = [inputTensor]
         if let labels = labels {
-            self.labels = [labels]
+            self.labels = labels
         } else {
             self.labels = nil
         }
@@ -52,53 +52,15 @@ public struct DataSet: Transferable {
     ///
     ///  This initializer uses multideminsional arrays for input tensors and label tensors. The first ordinal element is for
     ///  arrays of tensor data for input and output of each graph of a model. The next ordinal element is array of tensors
-    ///  containing the input data or labels, which will get concatenated into a single tensor. So, the following array of tensors:
-    ///
-    ///  ```swift
-    ///     [
-    ///         [
-    ///             Tensor([Float]([2, 1])),
-    ///             Tensor([Float]([4, 3])),
-    ///         ],
-    ///         [
-    ///             Tensor([Float]([5, 6])),
-    ///             Tensor([Float]([7, 8])),
-    ///         ]
-    ///     ]
-    ///  ```
-    ///  is equivalent to,
-    ///  ```swift
-    ///     [
-    ///         [
-    ///             Tensor([Float]([
-    ///                 [2, 1],
-    ///                 [4, 3]
-    ///             ]))
-    ///         ],
-    ///         [
-    ///             Tensor([Float]([
-    ///                 [5, 6],
-    ///                 [7, 8]
-    ///              ])),
-    ///         ]
-    ///     ]
-    ///  ```
+    ///  containing the input data or labels.
     ///
     /// - Parameters:
     ///  - inputTensors: Multideminsional array containing an array of input tensor data for each graph in a model.
-    ///  - labels: Optional multideminsional array containg an array of expected labels for each graph.
+    ///  - labels: Optional multideminsional array containg an array of expected labels.
     ///  - batchSize: The size of a batch of data used to train or infer a model.
-    public init(inputTensors: [[Tensor]], labels: [[Tensor]]? = nil, batchSize: Int) {
-        tensors = inputTensors.map {
-            $0.count > 1 ? $0[1...].reduce($0[0]) { $0.appended($1) } : $0[0]
-        }
-        if let labels = labels {
-            self.labels = labels.map {
-                $0.count > 1 ? $0[1...].reduce($0[0]) { $0.appended($1) } : $0[0]
-            }
-        } else {
-            self.labels = nil
-        }
+    public init(inputTensors: [Tensor], labels: Tensor? = nil, batchSize: Int) {
+        tensors = inputTensors
+        self.labels = labels
         self.batchSize = batchSize
     }
 }

@@ -13,13 +13,26 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Created by Brian Smith on 1/20/23.
+//
+//  Created by Brian Smith on 2/10/23.
 //
 
 import Foundation
-import MimicTransferables
 
-protocol TestModel {
-    var graph: Graph { get }
-    var dataSet: DataSet { get }
+public struct TrainingDataSet<NativeType: NeuralNativeType>: DataBatchable {
+    public let batchSize: Int
+    public let trainingData: TrainingData<NativeType>
+
+    public var inputTensors: [Tensor<NativeType>] {
+        trainingData.inputs.map { $0.data }
+    }
+    
+    public var labels: Tensor<NativeType>? {
+        trainingData.labels.data
+    }
+    
+    public init(batchSize: Int, @DataContainerBuilder<NativeType> _ make: () -> (TrainingData<NativeType>)) {
+        self.batchSize = batchSize
+        trainingData = make()
+    }
 }

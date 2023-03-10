@@ -32,7 +32,7 @@ struct ArithmeticModel: TestModel {
     }
     
     let resultVector: [Float]
-    let graphs: [Graph]
+    let graph: Graph
     let dataSet: DataSet
     let tensorData1: Tensor
     let tensorData2: Tensor
@@ -54,7 +54,7 @@ struct ArithmeticModel: TestModel {
         
         let layer = Layer(kind: .arithmetic, dataType: tensorData1.dataType, arithmeticOperation: .add)
         
-        graphs = [Graph(
+        graph = Graph(
             kind: .sequential,
             dataType: tensorData1.dataType,
             inputTensors: [
@@ -62,10 +62,10 @@ struct ArithmeticModel: TestModel {
                  Tensor(shape: [1, Constant.vector2.count], dataType: tensorData2.dataType, featureChannelPosition: .notApplicable)]
             ],
             layers: [layer],
-            featureChannelPosition: .notApplicable)]
+            featureChannelPosition: .notApplicable)
         
-        dataSet = DataSet(inputTensors: Constant.inputs.map { $0.map { Tensor($0) } },
-                                    batchSize: Constant.batchSize)
+        dataSet = DataSet(inputTensors: Constant.inputs.map { Tensor($0) },
+                          batchSize: Constant.batchSize)
     }
     
     func inputs(at index: Int) -> [Tensor] {

@@ -18,13 +18,15 @@
 
 import Foundation
 
-public struct InputDataSet<NativeType: NeuralNativeType>: DataSet {    
+public struct InferenceDataSet<NativeType: NeuralNativeType>: DataBatchable {    
     public let batchSize: Int
     public let inputs: [InputData<NativeType>]
     
-    public var inputTensors: [[Tensor<NativeType>]] {
-        inputs.map { $0.tensors }
+    public var inputTensors: [Tensor<NativeType>] {
+        inputs.map { $0.data }
     }
+    
+    public var labels: Tensor<NativeType>? { nil }
     
     public init(batchSize: Int, @InputDataSetBuilder<NativeType> _ make: () -> [InputData<NativeType>]) {
         self.batchSize = batchSize

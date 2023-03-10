@@ -30,11 +30,11 @@ public distributed actor ComputeEngineService {
     }
     
     public distributed func makeSession(kind: Session.Kind,
-                                        graphs: [Graph],
+                                        graph: Graph,
                                         dataSet: DataSet) throws -> Session
     {
         return try Session(kind: kind,
-                           graphs: graphs,
+                           graph: graph,
                            dataSet: dataSet,
                            platformFactory: platformFactory,
                            actorSystem: actorSystem)

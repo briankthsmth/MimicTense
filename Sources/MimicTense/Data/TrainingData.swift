@@ -13,13 +13,22 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Created by Brian Smith on 1/20/23.
+//
+//  Created by Brian Smith on 2/13/23.
 //
 
 import Foundation
-import MimicTransferables
 
-protocol TestModel {
-    var graph: Graph { get }
-    var dataSet: DataSet { get }
+/// Structure to contain input  data and label data for training.
+public struct TrainingData<NativeType: NeuralNativeType>: DataContainable {
+    public let inputs: [InputData<NativeType>]
+    public let labels: LabelData<NativeType>
+    
+    public init(@TrainingDataBuilder<NativeType> _ make: () -> (inputs: [InputData<NativeType>],
+                                                                labels: LabelData<NativeType>))
+    {
+        let arguments = make()
+        inputs = arguments.inputs
+        labels = arguments.labels
+    }
 }

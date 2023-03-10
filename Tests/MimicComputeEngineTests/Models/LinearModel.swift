@@ -42,7 +42,7 @@ struct LinearModel: TestModel {
         [4.2]
     ]
     let labels: [Float]
-    let graphs: [Graph]
+    let graph: Graph
     let dataSet: DataSet
     
     init() {
@@ -61,12 +61,12 @@ struct LinearModel: TestModel {
                           outputFeatureChannelCount: Constant.outputChannels,
                           weights: weights,
                           biases: biases)
-        graphs = [Graph(kind: .sequential,
-                        dataType: .float32,
-                        inputTensor: Tensor(shape: [Constant.batchSize, Constant.inputChannels],
-                                            dataType: .float32),
-                        layers: [layer],
-                        featureChannelPosition: .notApplicable)]
+        graph = Graph(kind: .sequential,
+                       dataType: .float32,
+                       inputTensor: Tensor(shape: [Constant.batchSize, Constant.inputChannels],
+                                           dataType: .float32),
+                       layers: [layer],
+                       featureChannelPosition: .notApplicable)
         
         dataSet = DataSet(inputTensor: Tensor(samples),
                           labels: Tensor(labels),

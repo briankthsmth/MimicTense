@@ -24,7 +24,7 @@ class ArthmeticLayerInferenceGraphTests: XCTestCase {
     let model = ArithmeticModel()
     
     func testExecute() async throws {
-        let inferencGraph = try MlComputeInferenceGraph(graphs: model.graphs)
+        let inferencGraph = try MlComputeInferenceGraph(graphs: [model.graph])
         try inferencGraph.compile(device: .gpu)
         let results = try await inferencGraph.execute(inputs: model.inputs(at: 0),
                                                        batchSize: ArithmeticModel.Constant.batchSize)

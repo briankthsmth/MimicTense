@@ -52,7 +52,7 @@ final class ComputeEngineServiceTests: XCTestCase {
     
     func runExecutionTest(for model: TestModel, kind: Session.Kind, device: DeviceType, testHandler: (Int, [Tensor]) throws -> Void) async throws {
         let session = try await service.makeSession(kind: kind,
-                                                    graphs: model.graphs,
+                                                    graph: model.graph,
                                                     dataSet: model.dataSet)
         try await session.compile(device: device)
         var batch = 0
