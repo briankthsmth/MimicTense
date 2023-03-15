@@ -30,12 +30,12 @@ final class MlComputeTrainingGraphTests: XCTestCase {
     var trainingGraph: MlComputeTrainingGraph!
     
     override func setUpWithError() throws {
-        trainingGraph = try MlComputeTrainingGraph(graphs: [model.graph],
-                                                   lossLabelTensors: [Tensor(shape: [
+        trainingGraph = try MlComputeTrainingGraph(graph: model.graph,
+                                                   lossLabelTensor: Tensor(shape: [
                                                     LinearModel.Constant.batchSize,
                                                     LinearModel.Constant.outputChannels
                                                    ],
-                                                                             dataType: .float32)],
+                                                                            dataType: .float32),
                                                    lossFunction: .meanSquaredError,
                                                    optimizer: .rootMeanSquare(learningRate: Constant.learningRate))
         
@@ -55,9 +55,8 @@ final class MlComputeTrainingGraphTests: XCTestCase {
     func testRetrieveGraphs() async throws {
         try await train()
         
-        let graphs = try trainingGraph.retrieveGraphs()
-        XCTAssertEqual(graphs.count, 1)
-        let layers = try XCTUnwrap(graphs.first?.layers)
+        let graph = try trainingGraph.retrieveGraph()
+        let layers = try XCTUnwrap(graph.layers)
         let modelLayers = try XCTUnwrap(model.graph.layers)
         XCTAssertEqual(layers.count, modelLayers.count)
         let layer = try XCTUnwrap(layers.first)
@@ -75,7 +74,7 @@ final class MlComputeTrainingGraphTests: XCTestCase {
                 let batchSamples = model.dataSet.makeBatch(at: batch)
                 let batchLabels = try XCTUnwrap(model.dataSet.makeBatchLabels(at: batch))
                 let _ = try await trainingGraph.execute(inputs: batchSamples,
-                                                        lossLables: [batchLabels],
+                                                        lossLables: batchLabels,
                                                         batchSize: LinearModel.Constant.batchSize)
             }
         }

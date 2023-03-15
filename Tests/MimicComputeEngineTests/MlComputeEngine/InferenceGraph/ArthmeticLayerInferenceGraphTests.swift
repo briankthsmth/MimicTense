@@ -24,14 +24,14 @@ class ArthmeticLayerInferenceGraphTests: XCTestCase {
     let model = ArithmeticModel()
     
     func testExecute() async throws {
-        let inferencGraph = try MlComputeInferenceGraph(graphs: [model.graph])
+        let inferencGraph = try MlComputeInferenceGraph(graph: model.graph)
         try inferencGraph.compile(device: .gpu)
-        let results = try await inferencGraph.execute(inputs: model.inputs(at: 0),
+        let result = try await inferencGraph.execute(inputs: model.inputs(at: 0),
                                                        batchSize: ArithmeticModel.Constant.batchSize)
         let expectedVector = model.expectedVector(at: 0)
         
-        XCTAssertEqual(results[0].shape[1], expectedVector.count)
-        XCTAssertEqual(results[0].dataType, ArithmeticModel.Constant.dataType)
-        assertEqual(resultTensor: results[0], expectedVector: expectedVector)
+        XCTAssertEqual(result.shape[1], expectedVector.count)
+        XCTAssertEqual(result.dataType, ArithmeticModel.Constant.dataType)
+        assertEqual(resultTensor: result, expectedVector: expectedVector)
     }
 }

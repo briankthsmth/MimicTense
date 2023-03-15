@@ -21,7 +21,7 @@ import MimicTransferables
 
 struct MlComputePlatformFactory: PlatformFactory {
     func makeInferenceGraph(graph: Graph) throws -> InferenceGraphable {
-        try MlComputeInferenceGraph(graphs: [graph])
+        try MlComputeInferenceGraph(graph: graph)
     }
     
     func makeTrainingGraph(graph: Graph,
@@ -29,8 +29,8 @@ struct MlComputePlatformFactory: PlatformFactory {
                            lossFunction: LossFunctionType,
                            optimizer: OptimizerType) throws -> TrainingGraphable
     {
-        try MlComputeTrainingGraph(graphs: [graph],
-                                   lossLabelTensors: [lossLabelTensor],
+        try MlComputeTrainingGraph(graph: graph,
+                                   lossLabelTensor: lossLabelTensor,
                                    lossFunction: lossFunction,
                                    optimizer: optimizer)
     }

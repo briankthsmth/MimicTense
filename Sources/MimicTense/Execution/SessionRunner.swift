@@ -21,6 +21,7 @@ import Foundation
 import MimicTransferables
 import MimicComputeEngine
 
+/// Class to run training or inference sessions on the backend.
 class SessionRunner<NativeType: NeuralNativeType> {
     
     init(kind: Session.Kind,
@@ -40,27 +41,31 @@ class SessionRunner<NativeType: NeuralNativeType> {
         try await session?.compile(device: device.transferable)
     }
 
-    func makeOutputStream() -> AsyncThrowingStream<[Tensor<NativeType>], Error> {
+    func makeOutputStream() -> AsyncThrowingStream<Tensor<NativeType>, Error> {
         AsyncThrowingStream(unfolding: {
-            guard
-                let session = self.session
-            else {
+            guard let session = self.session else {
                 return nil
             }
             
-            let outputs = try await session.executeNext()
-            if outputs == nil { self.endSession() }
-            return try outputs?.map { try Tensor<NativeType>.make(from: $0)  }
+            guard let output = try await session.executeNext() else {
+                try await self.endSession()
+                return nil
+            }
+            
+            return try Tensor<NativeType>.make(from: output)
         })
     }
-
-    @ComputeEngine private var computeEngine: ComputeEngineService
-    private var session: Session?
+        
     private let kind: Session.Kind
     private let dataSet: any MimicTense.DataBatchable
     private let graph: any Graphable
     
-    private func endSession() {
+    @ComputeEngine private var computeEngine: ComputeEngineService
+    private var session: Session?
+    private var finalGraph: Graph?
+    
+    private func endSession() async throws {
+        finalGraph = try await session?.retreiveGraph()
         session = nil
     }
 }

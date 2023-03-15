@@ -24,7 +24,7 @@ public class Inference<NativeType: NeuralNativeType>:
     Compilable, Executable
 {
     /// Property to an output stream for tensor results from each batch.
-    public var outputStream: AsyncThrowingStream<[Tensor<NativeType>], Error> {
+    public var outputStream: AsyncThrowingStream<Tensor<NativeType>, Error> {
         return sessionRunner.makeOutputStream()
     }
     

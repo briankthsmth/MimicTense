@@ -23,13 +23,15 @@ import MimicTransferables
 /// Class to build a training operation.
 public class Train<NativeType: NeuralNativeType>: Compilable, Executable {
     /// Property to an output stream for tensor results from each batch.
-    public var outputStream: AsyncThrowingStream<[Tensor<NativeType>], Error> {
+    public var outputStream: AsyncThrowingStream<Tensor<NativeType>, Error> {
         return sessionRunner.makeOutputStream()
     }
     
     /// Initializer that uses a result builder closure to build an training operation from a data set and graphs.
     ///
     ///  - Parameters:
+    ///    - lossFunction: The loss function.
+    ///    - optimizer: The type of optimizer to use.
     ///    - make: Result builder closure that builds a data set and graphs.
     public init(lossFunction: LossFunctionType,
                 optimizer: OptimizerType,
@@ -52,6 +54,6 @@ public class Train<NativeType: NeuralNativeType>: Compilable, Executable {
         try await sessionRunner.compile(device: device)
         return self
     }
-    
+        
     private var sessionRunner: SessionRunner<NativeType>
 }

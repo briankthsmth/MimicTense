@@ -63,19 +63,19 @@ public distributed actor Session {
         try operation.compile(device: device)
     }
     
-    public distributed func executeNext() async throws -> [Tensor]? {
+    public distributed func executeNext() async throws -> Tensor? {
         let batchRunner = self.batchRunner ?? {
             let runner = SerialBatchRunner(dataSet: dataSet, operation: operation)
             self.batchRunner = runner
             return runner
         } ()
-        let outputs = try await batchRunner.next()
-        if outputs == nil { self.batchRunner = nil }
-        return outputs
+        let output = try await batchRunner.next()
+        if output == nil { self.batchRunner = nil }
+        return output
     }
     
-    public distributed func retreiveGraphs() throws -> [Graph] {
-        try operation.retrieveGraphs()
+    public distributed func retreiveGraph() throws -> Graph {
+        try operation.retrieveGraph()
     }
         
     // MARK: Private Interface

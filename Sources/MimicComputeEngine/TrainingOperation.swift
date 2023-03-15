@@ -29,14 +29,14 @@ final class TrainingOperation: Operational, Compilable {
         try trainingGraph.compile(device: device)
     }
     
-    func execute(batch: Int, dataSet: DataSet) async throws -> [Tensor]? {
+    func execute(batch: Int, dataSet: DataSet) async throws -> Tensor? {
         let inputs = dataSet.makeBatch(at: batch)
         guard let lossLabels = dataSet.makeBatchLabels(at: batch) else { return nil }
-        return try await trainingGraph.execute(inputs: inputs, lossLables: [lossLabels], batchSize: dataSet.batchSize)
+        return try await trainingGraph.execute(inputs: inputs, lossLables: lossLabels, batchSize: dataSet.batchSize)
     }
     
-    func retrieveGraphs() throws -> [MimicTransferables.Graph] {
-        try trainingGraph.retrieveGraphs()
+    func retrieveGraph() throws -> MimicTransferables.Graph {
+        try trainingGraph.retrieveGraph()
     }
     
     private let trainingGraph: TrainingGraphable

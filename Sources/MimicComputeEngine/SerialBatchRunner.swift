@@ -25,7 +25,7 @@ final class SerialBatchRunner: BatchRunnable {
         self.operation = operation
     }
 
-    func next() async throws -> [Tensor]? {
+    func next() async throws -> Tensor? {
         guard batchIndex < dataSet.batchCount else { return nil }
         let results = try await operation.execute(batch: batchIndex, dataSet: dataSet)
         batchIndex += 1

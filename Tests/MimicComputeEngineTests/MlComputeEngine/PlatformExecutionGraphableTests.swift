@@ -24,7 +24,7 @@ import MimicTransferables
 final class PlatformExecutionGraphableTests: XCTestCase {
     struct MockExecutionGraph: PlatformExecutionGraphable {}
     
-    func testMakePlatformGraphs() throws {
+    func testMakePlatformGraph() throws {
         let graph = Graph(kind: .sequential,
                           dataType: .float32,
                           inputTensor: Tensor(shape: [1, 5], dataType: .float32),
@@ -49,9 +49,8 @@ final class PlatformExecutionGraphableTests: XCTestCase {
                                                  dataType: .float32))
                           ],
                           featureChannelPosition: .first)
-        let product = try MockExecutionGraph.makePlatformGraphs(from: [graph])
+        let product = try MockExecutionGraph.makePlatformGraph(from: graph)
         
-        XCTAssertEqual(product.graphs.count, 1)
-        XCTAssertEqual(product.graphs.first?.layers.count, 2)
+        XCTAssertEqual(product.graph.layers.count, 2)
     }
 }

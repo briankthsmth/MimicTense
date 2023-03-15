@@ -37,15 +37,14 @@ final class FullyConnectedLayerInferenceGraphTests: XCTestCase {
                           inputTensor: Tensor(shape: [1, 2], dataType: .float32),
                           layers: [layer],
                           featureChannelPosition: .notApplicable)
-        let inferenceGraph = try MlComputeInferenceGraph(graphs: [graph])
+        let inferenceGraph = try MlComputeInferenceGraph(graph: graph)
         try inferenceGraph.compile(device: .gpu)
-        let results = try await inferenceGraph.execute(inputs: dataSet.makeBatch(at: 0),
+        let result = try await inferenceGraph.execute(inputs: dataSet.makeBatch(at: 0),
                                                         batchSize: 1)
-        let resultTensor = results[0]
         let expectedVector: [Float] = [5]
         
-        XCTAssertEqual(resultTensor.shape, [1, 1])
-        XCTAssertEqual(resultTensor.dataType, .float32)
-        assertEqual(resultTensor: resultTensor, expectedVector: expectedVector)
+        XCTAssertEqual(result.shape, [1, 1])
+        XCTAssertEqual(result.dataType, .float32)
+        assertEqual(resultTensor: result, expectedVector: expectedVector)
     }
 }

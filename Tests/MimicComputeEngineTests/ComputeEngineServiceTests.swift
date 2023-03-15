@@ -32,9 +32,8 @@ final class ComputeEngineServiceTests: XCTestCase {
     
     func testInferenceExecution() async throws {
         let model = ArithmeticModel()
-        try await runExecutionTest(for: model, kind: .inference, device: .gpu, testHandler: { batch, outputs in
-            XCTAssertEqual(outputs.count, 1)
-            let result = try XCTUnwrap(outputs.first)
+        try await runExecutionTest(for: model, kind: .inference, device: .gpu, testHandler: { batch, output in
+            let result = try XCTUnwrap(output)
             assertEqual(resultTensor: result, expectedVector: model.expectedVector(at: batch))
         })
     }
@@ -43,21 +42,20 @@ final class ComputeEngineServiceTests: XCTestCase {
         let model = LinearModel()
         let kind = Session.Kind.training(lossFunction: .meanSquaredError,
                                          optimizer: .rootMeanSquare(learningRate: 0.01))
-        try await runExecutionTest(for: model, kind: kind, device: .cpu) { _, outputs in
-            XCTAssertEqual(outputs.count, 1)
-            let result = try XCTUnwrap(outputs.first)
+        try await runExecutionTest(for: model, kind: kind, device: .cpu) { _, output in
+            let result = try XCTUnwrap(output)
             XCTAssertEqual(result.shape, [2, 1])
         }
     }
     
-    func runExecutionTest(for model: TestModel, kind: Session.Kind, device: DeviceType, testHandler: (Int, [Tensor]) throws -> Void) async throws {
+    func runExecutionTest(for model: TestModel, kind: Session.Kind, device: DeviceType, testHandler: (Int, Tensor) throws -> Void) async throws {
         let session = try await service.makeSession(kind: kind,
                                                     graph: model.graph,
                                                     dataSet: model.dataSet)
         try await session.compile(device: device)
         var batch = 0
-        while let outputs = try await session.executeNext() {
-            try testHandler(batch, outputs)
+        while let output = try await session.executeNext() {
+            try testHandler(batch, output)
             batch += 1
         }
         XCTAssertEqual(batch, model.dataSet.batchCount)

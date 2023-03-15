@@ -66,9 +66,7 @@ final class TrainLinearRegressionTests: XCTestCase {
         .compile(device: .gpu)
         
         var outputCount = 0
-        for try await outputStream in train.outputStream {
-            XCTAssertEqual(outputStream.count, 1)
-            let batchOutput = try XCTUnwrap(outputStream.first)
+        for try await batchOutput in train.outputStream {
             XCTAssertEqual(batchOutput.shape, [2, 1])
             outputCount += 1
         }
