@@ -48,6 +48,7 @@ final class MlComputeTrainingGraphTests: XCTestCase {
         let layer = try trainingGraph.retrieveLayer(by: layerLabel)
         let weights = try XCTUnwrap(layer.weights?.extract(Float.self) as? [[Float]])
         let biases = try XCTUnwrap(layer.biases?.extract(Float.self) as? [Float])
+        XCTAssertEqual(layer.label, LinearModel.Constant.layerLabel)
         XCTAssertEqual(weights.first?.first ?? 0, LinearModel.Constant.slope, accuracy: 0.01)
         XCTAssertEqual(biases.first ?? 0, LinearModel.Constant.intercept, accuracy: 0.01)
     }
@@ -64,6 +65,7 @@ final class MlComputeTrainingGraphTests: XCTestCase {
         let weights = try XCTUnwrap(layer.weights?.extract(Float.self) as? [[Float]])
         let biases = try XCTUnwrap(layer.biases?.extract(Float.self) as? [Float])
         XCTAssertEqual(layer.kind, modelLayer.kind)
+        XCTAssertEqual(layer.label, LinearModel.Constant.layerLabel)
         XCTAssertEqual(weights.first?.first ?? 0, LinearModel.Constant.slope, accuracy: 0.01)
         XCTAssertEqual(biases.first ?? 0, LinearModel.Constant.intercept, accuracy: 0.01)
     }

@@ -26,6 +26,7 @@ struct LinearModel: TestModel {
         static let batchSize = 2
         static let inputChannels = 1
         static let outputChannels = 1
+        static let layerLabel = "TestLayer"
     }
     
     
@@ -54,7 +55,7 @@ struct LinearModel: TestModel {
                                    dataType: .float32,
                                    randomInitializerType: .uniform)
         let biases = Tensor([Float](repeating: 0, count: Constant.outputChannels))
-        let layer = Layer(label: "TestLayer",
+        let layer = Layer(label: Constant.layerLabel,
                           kind: .fullyConnected,
                           dataType: .float32,
                           inputFeatureChannelCount: Constant.inputChannels,

@@ -30,18 +30,21 @@ public class Train<NativeType: NeuralNativeType>: Compilable, Executable {
     /// Initializer that uses a result builder closure to build an training operation from a data set and graphs.
     ///
     ///  - Parameters:
+    ///    - epochs: Then number of epochs to perform.
     ///    - lossFunction: The loss function.
     ///    - optimizer: The type of optimizer to use.
     ///    - make: Result builder closure that builds a data set and graphs.
-    public init(lossFunction: LossFunctionType,
+    public init(epochs: Int,
+                lossFunction: LossFunctionType,
                 optimizer: OptimizerType,
-                @ExecutionGraphBuilder _ make: () -> (dataSet: any MimicTense.DataBatchable, graph: any Graphable))
+                @ExecutionGraphBuilder _ make: () -> (dataSet: any MimicTense.DataBatchable, graph: any Graphable)) throws
     {
         let input = make()
-        sessionRunner = SessionRunner(kind: .training(lossFunction: lossFunction,
-                                                      optimizer: optimizer),
-                                      dataSet: input.dataSet,
-                                      graph: input.graph)
+        sessionRunner = try SessionRunner(kind: .training(lossFunction: lossFunction,
+                                                          optimizer: optimizer),
+                                          epochs: epochs,
+                                          dataSet: input.dataSet,
+                                          graph: input.graph)
     }
     
     /// Compiles the graph on to the given device for training.
@@ -54,6 +57,35 @@ public class Train<NativeType: NeuralNativeType>: Compilable, Executable {
         try await sessionRunner.compile(device: device)
         return self
     }
+    
+    /// Retrieve a tensor with the trained weights for a layer.
+    ///
+    ///  - Parameters:
+    ///    - layer: The name for a layer in the model.
+    ///
+    ///  - Returns: A tensor with the traiined weights.
+    public func retrieveWeights(for layer: String) throws -> Tensor<NativeType> {
+        let layer = try sessionRunner.retrieveLayer(for: layer)
+        guard let weights = layer.weights else {
+            throw LayerError.unsetWeights
+        }
+        return try Tensor<NativeType>.make(from: weights)
+    }
+    
+    /// Retrieve a tensor with the trained weights for a layer.
+    ///
+    ///  - Parameters:
+    ///    - layer: The name for a layer in the model.
+    ///
+    ///  - Returns: A tensor with the traiined weights.
+    public func retrieveBiases(for layer: String) throws -> Tensor<NativeType> {
+        let layer = try sessionRunner.retrieveLayer(for: layer)
+        guard let biases = layer.biases else {
+            throw LayerError.unsetBiases
+        }
+        return try Tensor<NativeType>.make(from: biases)
+    }
         
+    // MARK: Private Interface
     private var sessionRunner: SessionRunner<NativeType>
 }

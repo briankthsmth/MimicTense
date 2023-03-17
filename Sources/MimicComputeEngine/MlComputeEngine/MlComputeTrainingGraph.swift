@@ -104,7 +104,8 @@ final class MlComputeTrainingGraph:
     ///  training.
     /// - Returns: All of the graphs for the model used in training.
     func retrieveGraph() throws -> Graph {
-        return try platformGraph.makeGraph()
+        platformTrainingGraph.synchronizeUpdates()
+        return try platformGraph.makeGraph(against: graph)
     }
     
     /// Retrieve the layer from the device memory identified by the given label.
@@ -120,11 +121,12 @@ final class MlComputeTrainingGraph:
     func retrieveLayer(by label: String) throws -> Layer {
         platformTrainingGraph.synchronizeUpdates()
         guard
+            let originalLayer = graph.layers.first(where: { $0.label == label }),
             let platformLayer = platformTrainingGraph.layers.first(where: { $0.label.contains(label) })
         else {
             throw ComputeEngineError.layerConversion
         }
-        return try platformLayer.makeLayer()
+        return try platformLayer.makeLayer(against: originalLayer)
     }
     
     // Mark: Private Interface

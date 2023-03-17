@@ -15,7 +15,9 @@ final class TrainLinearRegressionTests: XCTestCase {
         
         static let batchSize = 2
         static let learningRate: Float = 0.01
-        static let epochs = 10
+        static let epochs = 20
+        
+        static let layerName = "fullyConnected"
     }
     
     let inputs: [[Float]] = [
@@ -39,7 +41,8 @@ final class TrainLinearRegressionTests: XCTestCase {
     }
     
     func testTrainLinearRegression() async throws {
-        let train = try await Train<Float>(lossFunction: .meanSquaredError,
+        let train = try await Train<Float>(epochs: Constant.epochs,
+                                           lossFunction: .meanSquaredError,
                                            optimizer: .rootMeanSquare(learningRate: Constant.learningRate))
         {
             TrainingDataSet(batchSize: Constant.batchSize) {
@@ -53,12 +56,13 @@ final class TrainLinearRegressionTests: XCTestCase {
                 }
             }
             Sequential<Float> {
-                FullyConnected<Float>(weights: Tensor(shape: [1], randomizer: .uniformDelayed),
+                FullyConnected<Float>(name: Constant.layerName,
+                                      weights: Tensor(shape: [1, 1], randomizer: .uniformDelayed),
                                       biases: Tensor([Float]([0])),
                                       inputFeatureChannelCount: 1,
                                       outputFeatureChannelCount: 1) {
                     Inputs {
-                        Tensor<Float>(shape: [2, 1])
+                        Tensor<Float>(shape: [Constant.batchSize, 1])
                     }
                 }
             }
@@ -70,6 +74,12 @@ final class TrainLinearRegressionTests: XCTestCase {
             XCTAssertEqual(batchOutput.shape, [2, 1])
             outputCount += 1
         }
-        XCTAssertEqual(outputCount, numberOfBatches)
+        XCTAssertEqual(outputCount, numberOfBatches * Constant.epochs)
+        
+        let weights = try train.retrieveWeights(for: Constant.layerName)
+        let biases = try train.retrieveBiases(for: Constant.layerName)
+        
+        XCTAssertEqual(weights.rank2Data?.first?.first ?? 0, Constant.slope, accuracy: 0.01)
+        XCTAssertEqual(biases.rank1Data?.first ?? 0, Constant.intercept, accuracy: 0.01)
     }
 }

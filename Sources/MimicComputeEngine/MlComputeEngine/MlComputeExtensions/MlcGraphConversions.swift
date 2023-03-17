@@ -24,8 +24,13 @@ import MimicTransferables
 extension MLCGraph {
     /// Factory method to make a transferable Graph object from a MLCGraph object.
     ///
+    ///  If the original Graph object is provided, it will be used to extract layer labels as MLCompute modifes them.
+    ///
+    /// - Parameters:
+    ///    - originalGraph: The original Graph used to create the MLCGraph
+    ///
     /// - Returns:A Graph object.
-    func makeGraph() throws -> Graph {
+    func makeGraph(against originalGraph: Graph? = nil) throws -> Graph {
         guard let firstLayer = layers.first else {
             throw ComputeEngineError.layerConversion
         }
@@ -45,7 +50,11 @@ extension MLCGraph {
             platformLayers = layers
         }
     
-        let layers = try platformLayers.map { try $0.makeLayer() }
+        let layers = try platformLayers
+            .enumerated()
+            .map {
+                try $1.makeLayer(against: originalGraph?.layers[$0])
+            }
         let sourceTensors = sourceTensors(for: firstLayer).map{ $0.makeTensor() }
         return Graph(kind: .sequential,
                      dataType: .float32,

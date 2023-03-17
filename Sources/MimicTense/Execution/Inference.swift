@@ -32,11 +32,12 @@ public class Inference<NativeType: NeuralNativeType>:
     ///
     ///  - Parameters:
     ///    - make: Result builder closure that builds a data set and graphs.
-    public init(@ExecutionGraphBuilder _ make: () -> (dataSet: any MimicTense.DataBatchable, graph: any Graphable)) {
+    public init(@ExecutionGraphBuilder _ make: () -> (dataSet: any MimicTense.DataBatchable, graph: any Graphable)) throws
+    {
         let input = make()
-        sessionRunner = SessionRunner(kind: .inference,
-                                      dataSet: input.dataSet,
-                                      graph: input.graph)
+        sessionRunner = try SessionRunner(kind: .inference,
+                                          dataSet: input.dataSet,
+                                          graph: input.graph)
     }
 
     /// Compiles the graph on to the given device for inference.

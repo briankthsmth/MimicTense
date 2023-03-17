@@ -22,6 +22,7 @@ import MimicCore
 
 public struct Convolution<NativeType: NeuralNativeType>: Layerable {
     public let identifier = LayerIdentifier(kind: .convolution)
+    public var name: String?
     
     public let inputs: Inputs<NativeType>?
     public let weights: Tensor<NativeType>?
@@ -33,12 +34,14 @@ public struct Convolution<NativeType: NeuralNativeType>: Layerable {
         
     public let arithmeticOperation: ArithmeticOperation? = nil
     
-    public init(kernelSize: KernelSize,
+    public init(name: String? = nil,
+                kernelSize: KernelSize,
                 inputFeatureChannelCount: Int,
                 outputFeatureChannelCount: Int,
                 weights: Tensor<NativeType>? = nil,
                 _ makeInputs: (() -> Inputs<NativeType>)? = nil)
     {
+        self.name = name
         self.kernelSize = kernelSize
         self.inputFeatureChannelCount = inputFeatureChannelCount
         self.outputFeatureChannelCount = outputFeatureChannelCount
