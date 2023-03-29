@@ -21,7 +21,7 @@ import Distributed
 
 @propertyWrapper
 public struct ComputeEngine {
-    private static var service = ComputeEngineService(actorSystem: LocalTestingDistributedActorSystem())
+    private static var service = ComputeEngineService()
     
     public init() {}
     

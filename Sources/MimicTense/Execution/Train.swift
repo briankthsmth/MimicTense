@@ -53,6 +53,7 @@ public class Train<NativeType: NeuralNativeType>: Compilable, Executable {
     ///   - device: The device type.
     ///
     /// - Returns: A reference to the Train object.
+    @ discardableResult
     public func compile(device: Device) async throws -> Self {
         try await sessionRunner.compile(device: device)
         return self

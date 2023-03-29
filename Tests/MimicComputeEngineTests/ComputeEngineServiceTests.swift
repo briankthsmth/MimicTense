@@ -27,7 +27,7 @@ final class ComputeEngineServiceTests: XCTestCase {
     var service: ComputeEngineService!
     
     override func setUpWithError() throws {
-        service = ComputeEngineService(actorSystem: actorSystem)
+        service = ComputeEngineService()
     }
     
     func testInferenceExecution() async throws {
