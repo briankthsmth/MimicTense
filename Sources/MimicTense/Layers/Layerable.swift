@@ -24,6 +24,7 @@ public protocol Layerable {
     associatedtype NativeType: NeuralNativeType
     
     var identifier: LayerIdentifier { get }
+    var name: String? { get }
     
     var inputs: Inputs<NativeType>? { get }
     var weights: Tensor<NativeType>? { get }
@@ -49,7 +50,8 @@ extension Layerable {
     }
     
     func makeTransferable() throws -> Layer {
-        Layer(kind: identifier.kind,
+        Layer(label: name,
+              kind: identifier.kind,
               dataType: DataType(NativeType.self),
               arithmeticOperation: arithmeticOperation,
               kernelSize: try kernelSize?.makeTransferable(),

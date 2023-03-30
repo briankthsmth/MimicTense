@@ -21,5 +21,5 @@ import Foundation
 import MimicTransferables
 
 protocol ModelInspectable {
-    func retrieveGraphs() throws -> [Graph]
+    func retrieveGraph() throws -> Graph
 }

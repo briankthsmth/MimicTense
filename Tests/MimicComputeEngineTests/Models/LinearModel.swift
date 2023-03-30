@@ -26,6 +26,7 @@ struct LinearModel: TestModel {
         static let batchSize = 2
         static let inputChannels = 1
         static let outputChannels = 1
+        static let layerLabel = "TestLayer"
     }
     
     
@@ -42,7 +43,7 @@ struct LinearModel: TestModel {
         [4.2]
     ]
     let labels: [Float]
-    let graphs: [Graph]
+    let graph: Graph
     let dataSet: DataSet
     
     init() {
@@ -54,19 +55,19 @@ struct LinearModel: TestModel {
                                    dataType: .float32,
                                    randomInitializerType: .uniform)
         let biases = Tensor([Float](repeating: 0, count: Constant.outputChannels))
-        let layer = Layer(label: "TestLayer",
+        let layer = Layer(label: Constant.layerLabel,
                           kind: .fullyConnected,
                           dataType: .float32,
                           inputFeatureChannelCount: Constant.inputChannels,
                           outputFeatureChannelCount: Constant.outputChannels,
                           weights: weights,
                           biases: biases)
-        graphs = [Graph(kind: .sequential,
-                        dataType: .float32,
-                        inputTensor: Tensor(shape: [Constant.batchSize, Constant.inputChannels],
-                                            dataType: .float32),
-                        layers: [layer],
-                        featureChannelPosition: .notApplicable)]
+        graph = Graph(kind: .sequential,
+                       dataType: .float32,
+                       inputTensor: Tensor(shape: [Constant.batchSize, Constant.inputChannels],
+                                           dataType: .float32),
+                       layers: [layer],
+                       featureChannelPosition: .notApplicable)
         
         dataSet = DataSet(inputTensor: Tensor(samples),
                           labels: Tensor(labels),

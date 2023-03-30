@@ -18,53 +18,38 @@
 
 import Foundation
 import MimicTransferables
-import MimicComputeEngine
 
+/// Class to build an inference operation.
 public class Inference<NativeType: NeuralNativeType>:
     Compilable, Executable
 {
-    public enum SessionError: Error {
-        case convertion
+    /// Property to an output stream for tensor results from each batch.
+    public var outputStream: AsyncThrowingStream<Tensor<NativeType>, Error> {
+        return sessionRunner.makeOutputStream()
     }
     
-    public var outputTensor: Tensor<NativeType> {
-        Tensor(shape: [1])
-    }
-    
-    public var outputStream: AsyncThrowingStream<[Tensor<NativeType>], Error> {
-        AsyncThrowingStream(unfolding: { [weak self] in
-            guard
-                let self = self,
-                let session = self.session
-            else {
-                return nil
-            }
-            
-            let outputs = try await session.executeNext()
-            if outputs == nil { self.session = nil }
-            return try outputs?.map { try Tensor<NativeType>.make(from: $0)  }
-        })
-    }
-    
-    public init(@ExecutionGraphBuilder _ make: () -> (any MimicTense.DataSet, [any Graphable])) {
+    /// Initializer that uses a result builder closure to build an inference operation from a data set and graphs.
+    ///
+    ///  - Parameters:
+    ///    - make: Result builder closure that builds a data set and graphs.
+    public init(@ExecutionGraphBuilder _ make: () -> (dataSet: any MimicTense.DataBatchable, graph: any Graphable)) throws
+    {
         let input = make()
-        dataSet = input.0
-        graphs = input.1
+        sessionRunner = try SessionRunner(kind: .inference,
+                                          dataSet: input.dataSet,
+                                          graph: input.graph)
     }
-    
+
+    /// Compiles the graph on to the given device for inference.
+    ///
+    /// - Parameters:
+    ///   - device: The device type.
+    ///
+    /// - Returns: A reference to the Inference object.
     public func compile(device: Device) async throws -> Self {
-        guard session == nil else { return self }
-        session = try await computeEngine.makeSession(kind: .inference,
-                                                      graphs: graphs.map { try $0.makeTransferable() },
-                                                      dataSet: dataSet.makeTransferable())
-        try await session?.compile(device: device.transferable)
+        try await sessionRunner.compile(device: device)
         return self
     }
     
-    
-    @ComputeEngine private var computeEngine: ComputeEngineService
-    private var session: Session?
-    
-    private let dataSet: any MimicTense.DataSet
-    private let graphs: [any Graphable]
+    private var sessionRunner: SessionRunner<NativeType>
 }

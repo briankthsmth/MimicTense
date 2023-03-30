@@ -80,15 +80,15 @@ class ConvolutionLayerInferenceGraphTests: XCTestCase {
                                               featureChannelPosition: input.featureChannelPosition),
                           layers: [layer],
                           featureChannelPosition: input.featureChannelPosition)
-        let inferenceGraph = try MlComputeInferenceGraph(graphs: [graph])
+        let inferenceGraph = try MlComputeInferenceGraph(graph: graph)
         try inferenceGraph.compile(device: .gpu)
-        let results = try await inferenceGraph.execute(inputs: dataSet.makeBatch(at: 0),
+        let result = try await inferenceGraph.execute(inputs: dataSet.makeBatch(at: 0),
                                                         batchSize: batchSize)
 
         let expectedVector = Array(expected.joined().joined().joined())
         
-        XCTAssertEqual(results[0].shape, expectedOutputTensor.shape)
-        XCTAssertEqual(results[0].dataType, expectedOutputTensor.dataType)
-        assertEqual(resultTensor: results[0], expectedVector: expectedVector)
+        XCTAssertEqual(result.shape, expectedOutputTensor.shape)
+        XCTAssertEqual(result.dataType, expectedOutputTensor.dataType)
+        assertEqual(resultTensor: result, expectedVector: expectedVector)
     }
 }

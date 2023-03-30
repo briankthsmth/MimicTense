@@ -20,5 +20,5 @@ import Foundation
 import MimicTransferables
 
 protocol BatchRunnable {
-    func next() async throws -> [Tensor]?
+    func next() async throws -> Tensor?
 }

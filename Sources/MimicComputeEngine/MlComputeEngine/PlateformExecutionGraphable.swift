@@ -25,71 +25,68 @@ protocol PlatformExecutionGraphable {
 }
 
 extension PlatformExecutionGraphable {
-    /// Factory method to create MLCompute graphs.
+    /// Factory method to create MLCompute graph.
     ///
     /// The tuple arguments in the return value are defined as,
-    ///   - graphs: The converted graphs.
-    ///   - inputs: The input tensors for each graph.
-    ///   - outputs: The output tensors for each graph.
+    ///   - graph: The converted graph.
+    ///   - inputs: The input tensors.
+    ///   - outputs: The output tensor.
     ///
     /// - Parameters:
-    ///   - graphs: The transferable graphs to convert.
+    ///   - graph: The transferable graph to convert.
     ///
     /// - Returns: A tuple containing the plateform api need to construct a graph for execution.
-    static func makePlatformGraphs(from graphs: [Graph]) throws -> (graphs: [MLCGraph],
-                                                                    inputs: [MLCTensor],
-                                                                    outputs: [MLCTensor])
+    static func makePlatformGraph(from graph: Graph) throws -> (graph: MLCGraph,
+                                                                inputs: [MLCTensor],
+                                                                output: MLCTensor)
     {
-        var platformGraphs = [MLCGraph]()
-        var inputTensors = [MLCTensor]()
-        var outputTensors = [MLCTensor]()
+        let platformGraph = MLCGraph()
+        var inputs = [MLCTensor]()
         
-        try graphs
-            .forEach { graph in
-                let platformGraph = MLCGraph()
-                
-                var sourceTensors: [MLCTensor] = []
-                try graph
-                    .layers
-                    .enumerated()
-                    .forEach { index, layer in
-                        if let layerInputTensors = graph.layerInputTensors(at: index) {
-                            var platformInputTensors = layerInputTensors.map { $0.makeMlcTensor() }
-                            inputTensors.append(contentsOf: platformInputTensors)
-                            if graph.featureChannelPosition == .last {
-                                platformInputTensors = try platformInputTensors.map {
-                                    guard
-                                        let transposeLayer = MLCTransposeLayer(dimensions: [0, 3, 1, 2]),
-                                        let outputTensor = platformGraph.node(with: transposeLayer, source: $0)
-                                    else {
-                                        throw ComputeEngineError.layerConversion
-                                    }
-                                    return outputTensor
-                                }
-                            }
-                            sourceTensors.append(contentsOf: platformInputTensors)
-                        }
-                        guard let mlcLayer = try layer.makeMlComputeLayer() else { throw ComputeEngineError.layerConversion }
-                        guard let sourceTensor = platformGraph.node(with: mlcLayer, sources: sourceTensors) else {
-                            throw ComputeEngineError.layerConversion
-                        }
-                        sourceTensors = [sourceTensor]
-                    }
-                
-                if graph.featureChannelPosition == .last {
-                    guard
-                        let transposeLayer = MLCTransposeLayer(dimensions: [0, 2, 3, 1]),
-                        let source = sourceTensors.first,
-                        let tensor = platformGraph.node(with: transposeLayer, source: source)
-                    else {
-                        throw ComputeEngineError.layerConversion
-                    }
-                    sourceTensors = [tensor]
+        let layersOutput: MLCTensor? = try graph
+            .layers
+            .enumerated()
+            .reduce(nil) { reduceTensor, arguments in
+                var layerInputs = [MLCTensor]()
+                if let sourceTensor = reduceTensor {
+                    layerInputs = [sourceTensor]
                 }
-                
-                platformGraphs.append(platformGraph)
-                outputTensors.append(contentsOf: sourceTensors)
+                if let layerInputTensors = graph.layerInputTensors(at: arguments.offset) {
+                    var platformInputTensors = layerInputTensors.map { $0.makeMlcTensor() }
+                    inputs.append(contentsOf: platformInputTensors)
+                    
+                    if graph.featureChannelPosition == .last {
+                        platformInputTensors = try platformInputTensors.map {
+                            guard
+                                let transposeLayer = MLCTransposeLayer(dimensions: [0, 3, 1, 2]),
+                                let outputTensor = platformGraph.node(with: transposeLayer, source: $0)
+                            else {
+                                throw ComputeEngineError.layerConversion
+                            }
+                            return outputTensor
+                        }
+                    }
+                    layerInputs.append(contentsOf: platformInputTensors)
+                }
+                guard let mlcLayer = try arguments.element.makeMlComputeLayer() else { throw ComputeEngineError.layerConversion }
+                guard let sourceTensor = platformGraph.node(with: mlcLayer, sources: layerInputs) else {
+                    throw ComputeEngineError.layerConversion
+                }
+                return sourceTensor
             }
-        return (platformGraphs, inputTensors, outputTensors)
+        
+        guard var output = layersOutput else { throw ComputeEngineError.layerConversion }
+        
+        if graph.featureChannelPosition == .last {
+            guard
+                let transposeLayer = MLCTransposeLayer(dimensions: [0, 2, 3, 1]),
+                let tensor = platformGraph.node(with: transposeLayer, source: output)
+            else {
+                throw ComputeEngineError.layerConversion
+            }
+            output = tensor
+        }
+                
+        return (platformGraph, inputs, output)
     }
 }

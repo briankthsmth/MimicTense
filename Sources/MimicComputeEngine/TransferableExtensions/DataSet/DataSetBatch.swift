@@ -22,7 +22,7 @@ import MimicTransferables
 /// Extension methods to handle creating batch data from datasets.
 extension DataSet {
     /// A placeholder Tensor (contains no data) for a batch of labels.
-    var batchLabelsPlaceholder: [Tensor]? {
+    var batchLabelsPlaceholder: Tensor? {
         labels?.map { Tensor(shape: [batchSize] + $0.shape[1...], dataType: $0.dataType) }
     }
     
@@ -30,18 +30,18 @@ extension DataSet {
     /// - Parameters:
     ///  - batch: The index for the batch to create
     ///
-    /// - Returns: An array of tensors with batch input tensor data for each graph in the model.
+    /// - Returns: An array of tensors with batch input tensor data.
     public func makeBatch(at batch: Int) -> [Tensor] {
         return makeBatch(with: tensors, batch: batch)
     }
     
-    /// Factory method  to create a the expected label tensor for training graphs.
+    /// Factory method  to create a the expected label tensor for a training graph.
     ///  - Parameters:
     ///    - batch: The index for the batch to create.
     ///
-    ///  - Returns: An array of tensors with batch label data for each graph in the model. Returns nil if
+    ///  - Returns: An array of tensors with batch label data. Returns nil if
     ///         there are no training labels set in the dataset.
-    public func makeBatchLabels(at batch: Int) -> [Tensor]? {
+    public func makeBatchLabels(at batch: Int) -> Tensor? {
         guard let labels = labels else { return nil }
         return makeBatch(with: labels, batch: batch)
     }

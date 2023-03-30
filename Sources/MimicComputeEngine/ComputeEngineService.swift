@@ -20,26 +20,32 @@ import Foundation
 import MimicTransferables
 import Distributed
 
-
-public distributed actor ComputeEngineService {
-    public typealias ActorSystem = LocalTestingDistributedActorSystem
+/// Acts as a service to control distributed sessions.
+public actor ComputeEngineService {
     
-    public init(actorSystem: ActorSystem) {
-        self.actorSystem = actorSystem
+    /// Initializer for service.
+    public init() {
         platformFactory = ComputeEngineService.makePlatformFactory()
     }
     
-    public distributed func makeSession(kind: Session.Kind,
-                                        graphs: [Graph],
-                                        dataSet: DataSet) throws -> Session
+    /// Factory method to create sessions.
+    ///
+    ///  - Parameters:
+    ///    - kind: The kind of session to create.
+    ///    - graph: A neural network graph to use for the session.
+    ///    - dataSet: The data set to use for the session.
+    public func makeSession(kind: Session.Kind,
+                            graph: Graph,
+                            dataSet: DataSet) throws -> Session
     {
         return try Session(kind: kind,
-                           graphs: graphs,
+                           graph: graph,
                            dataSet: dataSet,
                            platformFactory: platformFactory,
-                           actorSystem: actorSystem)
+                           actorSystem: LocalTestingDistributedActorSystem())
     }
     
+    // Mark: Private Interface
     private let platformFactory: PlatformFactory
     
     private static func makePlatformFactory() -> PlatformFactory {

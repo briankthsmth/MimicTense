@@ -24,8 +24,15 @@ import MimicTransferables
 extension MLCLayer {
     /// Factory method to make transferable Layer object from a MLCLayer object.
     ///
+    /// If the original Layer object is provided in the parameters, the original label for the layer
+    /// will be used as MLCompute can change it.
+    /// 
+    /// - Parameters:
+    ///   - originalLayer: The original Layer object that was used to create the MLCLayer.
+    ///
     /// - Returns: A Layer object.
-    func makeLayer() throws -> Layer {
+    func makeLayer(against originalLayer: Layer? = nil) throws -> Layer {
+        let label: String? = originalLayer?.label ?? self.label
         switch self {
         case let fullyConnectedLayer as MLCFullyConnectedLayer:
             // MLCompute wants a batch count of 1 in weights and biases, which seems
@@ -36,7 +43,7 @@ extension MLCLayer {
             let biases = fullyConnectedLayer.biases?.makeTensor().map {
                 Tensor($0, shape: Array($0.shape[1...]))
             }
-            return Layer(label: fullyConnectedLayer.label,
+            return Layer(label: label,
                          kind: .fullyConnected,
                          dataType: weights.dataType,
                          inputFeatureChannelCount: fullyConnectedLayer.descriptor.inputFeatureChannelCount,
@@ -61,7 +68,7 @@ extension MLCLayer {
                 Tensor($0, shape: Array($0.shape[1...]))
             }
             
-            return Layer(label: convolutionLayer.label,
+            return Layer(label: label,
                          kind: .convolution,
                          dataType: .float32,
                          kernelSize: Layer.KernelSize(height: convolutionLayer.descriptor.kernelSizes.height,

@@ -20,5 +20,5 @@ import Foundation
 import MimicTransferables
 
 protocol InferenceGraphable: AnyObject, ModelInspectable, Compilable, InferenceExecutable {
-    func retrieveOutputs() -> [Tensor]
+    func retrieveOutput() -> Tensor
 }

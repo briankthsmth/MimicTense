@@ -20,5 +20,5 @@ import Foundation
 import MimicTransferables
 
 protocol Operational: ModelInspectable, Compilable {
-    func execute(batch: Int, dataSet: DataSet) async throws -> [Tensor]?
+    func execute(batch: Int, dataSet: DataSet) async throws -> Tensor?
 }

@@ -22,31 +22,35 @@ import MimicTransferables
 
 final class SerialBatchRunnerTests: XCTestCase {
     final class TestOperation: Operational {
-        func execute(batch: Int, dataSet: DataSet) async throws -> [Tensor]? {
+        func execute(batch: Int, dataSet: DataSet) async throws -> Tensor? {
             await withCheckedContinuation({ continuation in
-                continuation.resume(returning: dataSet.makeBatch(at: batch))
+                continuation.resume(returning: dataSet.makeBatch(at: batch).first)
             })
         }
         
         func compile(device: MimicTransferables.DeviceType) {}
         func execute(dataSet: MimicTransferables.DataSet) -> [MimicTransferables.Tensor] { [] }
-        func retrieveGraphs() throws -> [MimicTransferables.Graph] { [] }
+        func retrieveGraph() throws -> MimicTransferables.Graph { throw ComputeEngineError.layerConversion }
     }
     
     func testNext() async throws {
         let inputTensors = [
-            [
-                Tensor([Float]([1])),
-                Tensor([Float]([2])),
-                Tensor([Float]([3]))
-            ]
+            Tensor([[Float]]([
+                [1],
+                [2],
+                [3]
+            ]))
+        ]
+        let expectedTensors = [
+            Tensor([[Float]]([[1]])),
+            Tensor([[Float]]([[2]])),
+            Tensor([[Float]]([[3]]))
         ]
         let dataSet = DataSet(inputTensors: inputTensors, batchSize: 1)
-        let expectedTensors = inputTensors[0].map { Tensor($0, shape: [1] + $0.shape) }
         let batchRunner = SerialBatchRunner(dataSet: dataSet, operation: TestOperation())
         var batchIndex = 0
-        while let outputs = try await batchRunner.next() {
-            XCTAssertEqual(outputs, [expectedTensors[batchIndex]])
+        while let output = try await batchRunner.next() {
+            XCTAssertEqual(output, expectedTensors[batchIndex])
             batchIndex += 1
         }
         XCTAssertEqual(batchIndex, 3)

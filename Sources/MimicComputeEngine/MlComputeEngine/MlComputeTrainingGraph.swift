@@ -31,27 +31,27 @@ final class MlComputeTrainingGraph:
     /// Initializer for training graph.
     ///
     ///  - Parameters:
-    ///     - graphs: An array of graphs to use to create the training graph.
-    ///     - lossLabelTensor: Placeholder tensors with the shape of the loss labels for each graph.
+    ///     - graph: A graph to use to create the training graph.
+    ///     - lossLabelTensor: Placeholder tensor with the shape of the loss labels.
     ///     - lossFunction: The loss function used to calculate the loss errors.
     ///     - optimizer: The optimizer type to use.
-    init(graphs: [Graph],
-         lossLabelTensors: [Tensor],
+    init(graph: Graph,
+         lossLabelTensor: Tensor,
          lossFunction: LossFunctionType,
          optimizer: OptimizerType) throws
     {
-        self.graphs = graphs
+        self.graph = graph
         self.lossFunction = lossFunction
         self.optimizer = optimizer
         
-        let product = try Self.makePlatformGraphs(from: graphs)
-        platformGraphs = product.graphs
-        outputTensors = product.outputs
-        platformTrainingGraph = MLCTrainingGraph(graphObjects: product.graphs,
+        let product = try Self.makePlatformGraph(from: graph)
+        platformGraph = product.graph
+        outputTensor = product.output
+        platformTrainingGraph = MLCTrainingGraph(graphObjects: [product.graph],
                                                  lossLayer: lossFunction.makeMlcLossLayer(),
                                                  optimizer: optimizer.makeMlcOptimizer())
         platformTrainingGraph.addInputs(product.inputs.makeInputDictionary(startingWith: Constant.inputPrefix),
-                                        lossLabels: lossLabelTensors.map { $0.makeMlcTensor() }.makeInputDictionary(startingWith: Constant.lossLabelPrefix))
+                                        lossLabels: [lossLabelTensor.makeMlcTensor()].makeInputDictionary(startingWith: Constant.lossLabelPrefix))
     }
     
     /// Compile the graph to a paticular device
@@ -68,18 +68,17 @@ final class MlComputeTrainingGraph:
     /// Execute a training run for a single batch of data.
     ///
     /// - Parameters:
-    ///    - inputs: Tensors with data for each input in the graphs.
-    ///    - lossLables: Tensors with data for each graph.
+    ///    - inputs: Tensors with data for each input in the graph.
+    ///    - lossLables: Tensors with label data for the batch.
     ///    - batchSize: The size of the batchs in the tensor data.
     ///
-    /// - Returns: Array of output tensors for each graph in the model.
-    func execute(inputs: [Tensor], lossLables: [Tensor], batchSize: Int) async throws -> [Tensor] {
+    /// - Returns: Output tensors for the batch.
+    func execute(inputs: [Tensor], lossLables: Tensor, batchSize: Int) async throws -> Tensor {
         return try await withCheckedThrowingContinuation{ continuation in
             let inputsData = inputs
                 .map { $0.makeMlcTensorData() }
                 .makeInputDictionary(startingWith: Constant.inputPrefix)
-            let lossLabelsData = lossLables
-                .map { $0.makeMlcTensorData() }
+            let lossLabelsData = [lossLables.makeMlcTensorData()]
                 .makeInputDictionary(startingWith: Constant.lossLabelPrefix)
             
             platformTrainingGraph.execute(inputsData: inputsData,
@@ -94,7 +93,7 @@ final class MlComputeTrainingGraph:
                     continuation.resume(throwing: ComputeEngineError.invalidOutput)
                     return
                 }
-                continuation.resume(returning: [tensor.makeTensor()])
+                continuation.resume(returning: tensor.makeTensor())
             }
         }
     }
@@ -104,8 +103,9 @@ final class MlComputeTrainingGraph:
     /// Retrieves all of the graphs along with the  data that may have been updated during
     ///  training.
     /// - Returns: All of the graphs for the model used in training.
-    func retrieveGraphs() throws -> [Graph] {
-        return try platformGraphs.map { try $0.makeGraph() }
+    func retrieveGraph() throws -> Graph {
+        platformTrainingGraph.synchronizeUpdates()
+        return try platformGraph.makeGraph(against: graph)
     }
     
     /// Retrieve the layer from the device memory identified by the given label.
@@ -121,11 +121,12 @@ final class MlComputeTrainingGraph:
     func retrieveLayer(by label: String) throws -> Layer {
         platformTrainingGraph.synchronizeUpdates()
         guard
+            let originalLayer = graph.layers.first(where: { $0.label == label }),
             let platformLayer = platformTrainingGraph.layers.first(where: { $0.label.contains(label) })
         else {
             throw ComputeEngineError.layerConversion
         }
-        return try platformLayer.makeLayer()
+        return try platformLayer.makeLayer(against: originalLayer)
     }
     
     // Mark: Private Interface
@@ -134,11 +135,11 @@ final class MlComputeTrainingGraph:
         static let lossLabelPrefix = "lossLabel"
     }
     
-    private let graphs: [Graph]
+    private let graph: Graph
     private let lossFunction: LossFunctionType
     private let optimizer: OptimizerType
     
-    private let platformGraphs: [MLCGraph]
+    private let platformGraph: MLCGraph
     private let platformTrainingGraph: MLCTrainingGraph
-    private let outputTensors: [MLCTensor]
+    private let outputTensor: MLCTensor
 }

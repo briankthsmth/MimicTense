@@ -20,6 +20,7 @@ import Foundation
 
 extension Array {
     public func makeBuffer() -> [UInt8] {
+        guard count > 0 else { return [] }
         let byteCount = count * MemoryLayout<Element>.size
         return [UInt8](unsafeUninitializedCapacity: byteCount) { buffer, initializedCount in
             initializedCount = withUnsafeBytes { $0.bindMemory(to:  UInt8.self).copyBytes(to: buffer, count: byteCount)}

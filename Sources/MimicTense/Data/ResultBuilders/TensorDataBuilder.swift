@@ -19,8 +19,8 @@
 import Foundation
 
 @resultBuilder
-public enum InputDataBuilder<NativeType: NeuralNativeType> {
-    public static func buildBlock(_ components: Tensor<NativeType>...) -> [Tensor<NativeType>] {
-        components
+public enum TensorDataBuilder<NativeType: NeuralNativeType> {
+    public static func buildBlock(_ data: Tensor<NativeType>) -> Tensor<NativeType> {
+        data
     }
 }

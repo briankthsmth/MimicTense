@@ -22,6 +22,7 @@ import MimicCore
 
 public struct FullyConnected<NativeType: NeuralNativeType>: Layerable {
     public let identifier: LayerIdentifier = LayerIdentifier(kind: .fullyConnected)
+    public var name: String?
     
     public let inputs: Inputs<NativeType>?
     public let weights: Tensor<NativeType>?
@@ -32,13 +33,16 @@ public struct FullyConnected<NativeType: NeuralNativeType>: Layerable {
     public let arithmeticOperation: MimicCore.ArithmeticOperation? = nil
     public let kernelSize: KernelSize? = nil
     
-    public init(weights: Tensor<NativeType>,
+    public init(name: String? = nil,
+                weights: Tensor<NativeType>,
                 biases: Tensor<NativeType>? = nil,
                 inputFeatureChannelCount: Int,
                 outputFeatureChannelCount: Int,
                 _ makeInputs: (() -> Inputs<NativeType>)? = nil)
     {
         inputs = makeInputs?()
+        
+        self.name = name
         self.weights = weights
         self.biases = biases
         self.inputFeatureChannelCount = inputFeatureChannelCount

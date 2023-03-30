@@ -20,5 +20,12 @@ import Foundation
 import MimicTransferables
 
 protocol InferenceExecutable {
-    func execute(inputs: [Tensor], batchSize: Int) async throws-> [Tensor]
+    /// Excute a single inference run on a batch of input data.
+    ///
+    ///  - Parameters:
+    ///    - inputs: An array of inputs with the batch data.
+    ///    - batchsize: The size of the batch.
+    ///
+    ///   - Returns: A tensor of output data for the batch.
+    func execute(inputs: [Tensor], batchSize: Int) async throws-> Tensor
 }

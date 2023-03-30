@@ -45,10 +45,7 @@ class InferenceTests: XCTestCase {
             [[1.2], [1.5], [1.8]]
         ]]))
         var resultIndex = 0
-        for try await outputTensors in inference.outputStream {
-            XCTAssertEqual(outputTensors.count, 1)
-            try XCTSkipUnless(outputTensors.count > 0, "Output tensors array was empty.")
-            let outputTensor = outputTensors[0]
+        for try await outputTensor in inference.outputStream {
             XCTAssertTrue(outputTensor.isEqual(expectedTensor, accuracy: 0.0001),
                           "\(outputTensor) is not equal to \(expectedTensor)")
             resultIndex += 1

@@ -20,6 +20,6 @@ import Foundation
 import MimicTransferables
 
 protocol TestModel {
-    var graphs: [Graph] { get }
+    var graph: Graph { get }
     var dataSet: DataSet { get }
 }

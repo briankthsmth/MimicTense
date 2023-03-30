@@ -27,12 +27,12 @@ final class MlComputeInferenceGraph:
     PlatformExecutionGraphable,
     ModelInspectable
 {
-    init(graphs: [Graph]) throws {
-        self.graphs = graphs
+    init(graph: Graph) throws {
+        self.graph = graph
         
-        let converted = try Self.makePlatformGraphs(from: graphs)
-        self.outputTensors = converted.outputs
-        platformInferencGraph = MLCInferenceGraph(graphObjects: converted.graphs)
+        let converted = try Self.makePlatformGraph(from: graph)
+        self.outputTensor = converted.output
+        platformInferencGraph = MLCInferenceGraph(graphObjects: [converted.graph])
         platformInferencGraph.addInputs(converted.inputs.makeInputDictionary(startingWith: Constant.inputPrefix))
     }
     
@@ -41,28 +41,31 @@ final class MlComputeInferenceGraph:
         platformInferencGraph.compile(device: MLCDevice(type: device.mlcDeviceType)!)
     }
     
-    func execute(inputs: [Tensor], batchSize: Int) async throws -> [Tensor] {
+    /// Excute an inference run on the graph.
+    ///
+    ///  - Parameters:
+    ///    - inputs: The tensors with batch data for each input.
+    ///    - batchSize:  The number of  input data in each batch.
+    ///
+    ///   - Returns: A tensor with the batched output data.
+    func execute(inputs: [Tensor], batchSize: Int) async throws -> Tensor {
         return await withCheckedContinuation { continuation in
             let inputsData = inputs
                 .map { $0.makeMlcTensorData() }
                 .makeInputDictionary(startingWith: Constant.inputPrefix)
             
             platformInferencGraph.execute(inputsData: inputsData, batchSize: batchSize) { tensor, error, time in
-                continuation.resume(returning: self.retrieveOutputs())
+                continuation.resume(returning: self.retrieveOutput())
             }
         }
     }
         
-    func retrieveOutputs() -> [Tensor] {
-        outputTensors.map { convert(from: $0) }
+    func retrieveOutput() -> Tensor {
+        convert(from: outputTensor)
     }
-    
-    func retrieveOutputTensor(at index: Int) -> Tensor {
-        convert(from: outputTensors[index])
-    }
-    
-    func retrieveGraphs() throws -> [Graph] {
-        return graphs
+        
+    func retrieveGraph() throws -> Graph {
+        return graph
     }
     
     // MARK: Private Interface
@@ -70,9 +73,9 @@ final class MlComputeInferenceGraph:
         static let inputPrefix = "input"
     }
     
-    private let graphs: [Graph]
+    private let graph: Graph
     private let platformInferencGraph: MLCInferenceGraph
-    private let outputTensors: [MLCTensor]
+    private let outputTensor: MLCTensor
     
     private func convert(from platformTensor: MLCTensor) -> Tensor {
         let dataType = DataType(platformTensor.descriptor.dataType) ?? .float32

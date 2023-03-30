@@ -30,12 +30,12 @@ final class MlComputeTrainingGraphTests: XCTestCase {
     var trainingGraph: MlComputeTrainingGraph!
     
     override func setUpWithError() throws {
-        trainingGraph = try MlComputeTrainingGraph(graphs: model.graphs,
-                                                   lossLabelTensors: [Tensor(shape: [
+        trainingGraph = try MlComputeTrainingGraph(graph: model.graph,
+                                                   lossLabelTensor: Tensor(shape: [
                                                     LinearModel.Constant.batchSize,
                                                     LinearModel.Constant.outputChannels
                                                    ],
-                                                                             dataType: .float32)],
+                                                                            dataType: .float32),
                                                    lossFunction: .meanSquaredError,
                                                    optimizer: .rootMeanSquare(learningRate: Constant.learningRate))
         
@@ -44,10 +44,11 @@ final class MlComputeTrainingGraphTests: XCTestCase {
     
     func testRetrieveTrainedLayer() async throws {
         try await train()
-        let layerLabel = try XCTUnwrap(model.graphs.first?.layers.first?.label)
+        let layerLabel = try XCTUnwrap(model.graph.layers.first?.label)
         let layer = try trainingGraph.retrieveLayer(by: layerLabel)
         let weights = try XCTUnwrap(layer.weights?.extract(Float.self) as? [[Float]])
         let biases = try XCTUnwrap(layer.biases?.extract(Float.self) as? [Float])
+        XCTAssertEqual(layer.label, LinearModel.Constant.layerLabel)
         XCTAssertEqual(weights.first?.first ?? 0, LinearModel.Constant.slope, accuracy: 0.01)
         XCTAssertEqual(biases.first ?? 0, LinearModel.Constant.intercept, accuracy: 0.01)
     }
@@ -55,16 +56,16 @@ final class MlComputeTrainingGraphTests: XCTestCase {
     func testRetrieveGraphs() async throws {
         try await train()
         
-        let graphs = try trainingGraph.retrieveGraphs()
-        XCTAssertEqual(graphs.count, model.graphs.count)
-        let layers = try XCTUnwrap(graphs.first?.layers)
-        let modelLayers = try XCTUnwrap(model.graphs.first?.layers)
+        let graph = try trainingGraph.retrieveGraph()
+        let layers = try XCTUnwrap(graph.layers)
+        let modelLayers = try XCTUnwrap(model.graph.layers)
         XCTAssertEqual(layers.count, modelLayers.count)
         let layer = try XCTUnwrap(layers.first)
         let modelLayer = try XCTUnwrap(modelLayers.first)
         let weights = try XCTUnwrap(layer.weights?.extract(Float.self) as? [[Float]])
         let biases = try XCTUnwrap(layer.biases?.extract(Float.self) as? [Float])
         XCTAssertEqual(layer.kind, modelLayer.kind)
+        XCTAssertEqual(layer.label, LinearModel.Constant.layerLabel)
         XCTAssertEqual(weights.first?.first ?? 0, LinearModel.Constant.slope, accuracy: 0.01)
         XCTAssertEqual(biases.first ?? 0, LinearModel.Constant.intercept, accuracy: 0.01)
     }

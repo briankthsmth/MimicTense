@@ -21,5 +21,13 @@ import Foundation
 import MimicTransferables
 
 protocol TrainingExecutable {
-    func execute(inputs: [Tensor], lossLables: [Tensor], batchSize: Int) async throws -> [Tensor]
+    /// Excute a training run on a batch of data.
+    ///
+    ///  - Parameters:
+    ///    - inputs: Tensors for each input with the batch data.
+    ///    - lossLables: Tensor with the label data for the batch.
+    ///    - batchSize: Size of the batch.
+    ///
+    ///  - Returns: A tensor with the batch's output data.
+    func execute(inputs: [Tensor], lossLables: Tensor, batchSize: Int) async throws -> Tensor
 }

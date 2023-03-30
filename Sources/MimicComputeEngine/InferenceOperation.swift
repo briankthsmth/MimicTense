@@ -28,13 +28,13 @@ final class InferenceOperation: Operational, Compilable {
         try inferenceGraph.compile(device: device)
     }
     
-    func execute(batch: Int, dataSet: DataSet) async throws -> [Tensor]? {
+    func execute(batch: Int, dataSet: DataSet) async throws -> Tensor? {
         let inputs = dataSet.makeBatch(at: batch)
         return try await inferenceGraph.execute(inputs: inputs, batchSize: dataSet.batchSize)
     }
     
-    func retrieveGraphs() throws -> [MimicTransferables.Graph] {
-        try inferenceGraph.retrieveGraphs()
+    func retrieveGraph() throws -> MimicTransferables.Graph {
+        try inferenceGraph.retrieveGraph()
     }
     
     private let inferenceGraph: InferenceGraphable

@@ -20,7 +20,7 @@
 import Foundation
 
 
-public protocol SupportedNativeType {
+public protocol SupportedNativeType: Random {
     static var defaultValue: Self { get }
     static var memoryLayoutSize: Int { get }
     init()

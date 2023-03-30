@@ -17,17 +17,11 @@
 //
 
 import Foundation
-import MimicTransferables
 
-public protocol DataSet {
-    associatedtype NativeType: NeuralNativeType
+public struct InputData<NativeType: NeuralNativeType>: DataContainable {
+    public let data: Tensor<NativeType>
     
-    var batchSize: Int { get }
-    var inputTensors: [[Tensor<NativeType>]] { get }
-}
-
-extension DataSet {
-    func makeTransferable() throws -> MimicTransferables.DataSet {
-        MimicTransferables.DataSet(inputTensors: try inputTensors.map { try $0.map { try $0.makeTransferable()} }, batchSize: batchSize)
+    public init(@TensorDataBuilder<NativeType> _ make: () -> Tensor<NativeType>) {
+        data = make()
     }
 }

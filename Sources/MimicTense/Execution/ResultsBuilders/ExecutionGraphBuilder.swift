@@ -20,7 +20,7 @@ import Foundation
 
 @resultBuilder
 public enum ExecutionGraphBuilder {
-    public static func buildBlock(_ dataSet: any DataSet, _ components: any Graphable...) -> (any DataSet, [any Graphable]) {
-        return (dataSet, components)
+    public static func buildBlock(_ dataSet: any DataBatchable, _ graph: any Graphable) -> (any DataBatchable, any Graphable) {
+        return (dataSet, graph)
     }
 }

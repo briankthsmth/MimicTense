@@ -22,6 +22,8 @@ import MimicCore
 
 public struct Arithmetic<NativeType: NeuralNativeType>: Layerable {
     public let identifier = LayerIdentifier(kind: .arithmetic)
+    public var name: String?
+    
     public let inputs: Inputs<NativeType>?
     public let arithmeticOperation: MimicCore.ArithmeticOperation?
     
@@ -31,7 +33,7 @@ public struct Arithmetic<NativeType: NeuralNativeType>: Layerable {
     public let inputFeatureChannelCount: Int? = nil
     public let outputFeatureChannelCount: Int? = nil
     
-    public init(_ operation: ArithmeticOperation, _ makeInputs: (() -> Inputs<NativeType>)? = nil) {
+    public init(name: String? = nil, _ operation: ArithmeticOperation, _ makeInputs: (() -> Inputs<NativeType>)? = nil) {
         inputs = makeInputs?()
         arithmeticOperation = operation
     }
