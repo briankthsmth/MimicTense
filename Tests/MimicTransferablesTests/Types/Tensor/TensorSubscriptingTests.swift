@@ -48,4 +48,10 @@ final class TensorSubscriptingTests: XCTestCase {
         XCTAssertEqual(tensor[range], expectedTensor)
         XCTAssertEqual(tensor[closedRange], expectedTensor)
     }
+    
+    func testSubscriptAtIndex() {
+        let tensor = Tensor([Float]([1, 2, 3, 4, 5]))
+        let scalarTensor = tensor[1]
+        XCTAssertEqual(scalarTensor, Tensor([Float]([2])))
+    }
 }

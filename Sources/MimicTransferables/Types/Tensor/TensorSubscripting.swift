@@ -38,6 +38,7 @@ extension Tensor {
                dataType: dataType,
                featureChannelPosition: featureChannelPosition)
     }
+    
     /// Subscripting method using a closed range.
     ///
     /// - Parameters:
@@ -46,5 +47,15 @@ extension Tensor {
     /// - Returns: A new Tensor for the closed range.
     public subscript(range: ClosedRange<Index>) -> Tensor {
         self[Range(range)]
+    }
+    
+    ///  Subscripting method for a single index.
+    ///
+    ///  - Parameters:
+    ///    - index: The index to extract from the tensor
+    ///
+    ///  - Returns:A new Tensor with the sub-tensor for the given index.
+    public subscript(index: Index) -> Tensor {
+        self[index ... index]
     }
 }

@@ -13,7 +13,9 @@ let package = Package(
                 "MimicTense"
             ]),
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-collections.git", from: "1.0.0")
+    ],
     targets: [
         .target(
             name: "MimicTense",
@@ -40,6 +42,7 @@ let package = Package(
             name: "MimicComputeEngineTests",
             dependencies: [
                 "MimicComputeEngine",
+                .product(name: "Collections", package: "swift-collections")
             ]),
         .testTarget(
             name: "MimicTransferablesTests",

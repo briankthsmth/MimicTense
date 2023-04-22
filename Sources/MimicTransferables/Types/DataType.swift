@@ -31,6 +31,15 @@ public enum DataType: Transferable {
         }
     }
     
+    public init?<NativeType: Numeric> (_ type: NativeType.Type) {
+        switch type {
+        case is Float.Type:
+            self = .float32
+        default:
+            return nil
+        }
+    }
+    
     public var memoryLayoutSize: Int {
         switch self {
         case .float32:

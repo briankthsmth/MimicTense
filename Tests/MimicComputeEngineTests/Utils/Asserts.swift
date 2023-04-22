@@ -28,3 +28,24 @@ func assertEqual(resultTensor: Tensor, expectedVector: [Float]) {
         XCTAssertEqual($0.0, $0.1, accuracy: 0.0001)
     }
 }
+
+func assertEqual<T>(_ tensor1: Tensor, _ tensor2: Tensor, accuracy: T) throws where T: FloatingPoint {
+    let dataType =  try XCTUnwrap(DataType(T.self), "Unsupported native data type for accuracy.")
+    XCTAssertEqual(tensor1.dataType, dataType)
+    XCTAssertEqual(tensor2.dataType, dataType)
+    try XCTSkipUnless(tensor1.dataType == tensor2.dataType, "Data types not the same.")
+    XCTAssertEqual(tensor1.shape, tensor2.shape)
+    try XCTSkipUnless(tensor1.shape == tensor2.shape, "The shapes do not match.")
+    
+    tensor1.data.withUnsafeBufferPointer { pointer1 in
+        pointer1.withMemoryRebound(to: T.self) { buffer1 in
+            tensor2.data.withUnsafeBufferPointer { pointer2 in
+                pointer2.withMemoryRebound(to: T.self) { buffer2 in
+                    zip(buffer1, buffer2).forEach {
+                        XCTAssertEqual($0.0, $0.1, accuracy: accuracy)
+                    }
+                }
+            }
+        }
+    }
+}

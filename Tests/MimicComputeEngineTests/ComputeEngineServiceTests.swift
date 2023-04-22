@@ -31,10 +31,10 @@ final class ComputeEngineServiceTests: XCTestCase {
     }
     
     func testInferenceExecution() async throws {
-        let model = ArithmeticModel()
+        let model = AdditionModel()
         try await runExecutionTest(for: model, kind: .inference, device: .gpu, testHandler: { batch, output in
             let result = try XCTUnwrap(output)
-            assertEqual(resultTensor: result, expectedVector: model.expectedVector(at: batch))
+            try assertEqual(result, model.labels[batch], accuracy: Float(0.01))
         })
     }
     
