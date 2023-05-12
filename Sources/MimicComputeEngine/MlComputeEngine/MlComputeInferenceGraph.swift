@@ -24,7 +24,7 @@ import MimicTransferables
 /// 
 final class MlComputeInferenceGraph:
     InferenceGraphable,
-    PlatformExecutionGraphable,
+    MlComputeGraphTransformable,
     ModelInspectable
 {
     init(graph: Graph) throws {

@@ -21,8 +21,8 @@ import XCTest
 import MimicTransferables
 @testable import MimicComputeEngine
 
-final class PlatformExecutionGraphableTests: XCTestCase {
-    struct MockExecutionGraph: PlatformExecutionGraphable {}
+final class MlComputeGraphTransformableTests: XCTestCase {
+    struct MockExecutionGraph: MlComputeGraphTransformable {}
     
     func testMakePlatformGraph() throws {
         let graph = Graph(kind: .sequential,

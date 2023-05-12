@@ -23,7 +23,6 @@ import MimicTransferables
 
 final class MpsgInferenceGraph:
     InferenceGraphable,
-    PlatformExecutionGraphable,
     ModelInspectable
 {
     struct UnimplementedError: Error {}

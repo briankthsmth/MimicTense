@@ -25,7 +25,7 @@ import MLCompute
 ///
 final class MlComputeTrainingGraph:
     TrainingGraphable,
-    PlatformExecutionGraphable,
+    MlComputeGraphTransformable,
     ModelInspectable
 {
     /// Initializer for training graph.

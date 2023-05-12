@@ -21,24 +21,11 @@ import Foundation
 import MLCompute
 import MimicTransferables
 
-protocol PlatformExecutionGraphable {
-}
+protocol MlComputeGraphTransformable: PlatformGraphTransformable
+    where PlatformGraph == MLCGraph, PlatformTensor == MLCTensor {}
 
-extension PlatformExecutionGraphable {
-    /// Factory method to create MLCompute graph.
-    ///
-    /// The tuple arguments in the return value are defined as,
-    ///   - graph: The converted graph.
-    ///   - inputs: The input tensors.
-    ///   - outputs: The output tensor.
-    ///
-    /// - Parameters:
-    ///   - graph: The transferable graph to convert.
-    ///
-    /// - Returns: A tuple containing the plateform api need to construct a graph for execution.
-    static func makePlatformGraph(from graph: Graph) throws -> (graph: MLCGraph,
-                                                                inputs: [MLCTensor],
-                                                                output: MLCTensor)
+extension MlComputeGraphTransformable {
+    static func makePlatformGraph(from graph: Graph) throws -> GraphTransformProducts<PlatformGraph, PlatformTensor>
     {
         let platformGraph = MLCGraph()
         var inputs = [MLCTensor]()
@@ -87,6 +74,8 @@ extension PlatformExecutionGraphable {
             output = tensor
         }
                 
-        return (platformGraph, inputs, output)
+        return GraphTransformProducts(graph: platformGraph,
+                                      inputs: inputs,
+                                      output: output)
     }
 }
