@@ -21,9 +21,7 @@ import XCTest
 import MimicTransferables
 @testable import MimicComputeEngine
 
-final class MlComputeGraphTransformableTests: XCTestCase {
-    struct MockExecutionGraph: MlComputeGraphTransformable {}
-    
+final class GraphMlcConversionsTests: XCTestCase {
     func testMakePlatformGraph() throws {
         let graph = Graph(kind: .sequential,
                           dataType: .float32,
@@ -49,7 +47,7 @@ final class MlComputeGraphTransformableTests: XCTestCase {
                                                  dataType: .float32))
                           ],
                           featureChannelPosition: .first)
-        let product = try MockExecutionGraph.makePlatformGraph(from: graph)
+        let product = try graph.makePlatformGraph()
         
         XCTAssertEqual(product.graph.layers.count, 2)
     }

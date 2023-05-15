@@ -26,10 +26,7 @@ protocol PlatformGraphTransformable {
     
     /// Factory method to create a platform graph from a Transferable graph objject.
     ///
-    /// - Parameters:
-    ///   - graph: The transferable graph to convert.
-    ///
     /// - Returns: A GraphTransformProducts object.
-    static func makePlatformGraph(from graph: Graph) throws -> GraphTransformProducts<PlatformGraph, PlatformTensor>
+    func makePlatformGraph() throws -> GraphTransformProducts<PlatformGraph, PlatformTensor>
 }
 

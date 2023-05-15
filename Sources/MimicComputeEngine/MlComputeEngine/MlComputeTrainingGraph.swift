@@ -25,7 +25,6 @@ import MLCompute
 ///
 final class MlComputeTrainingGraph:
     TrainingGraphable,
-    MlComputeGraphTransformable,
     ModelInspectable
 {
     /// Initializer for training graph.
@@ -44,7 +43,7 @@ final class MlComputeTrainingGraph:
         self.lossFunction = lossFunction
         self.optimizer = optimizer
         
-        let product = try Self.makePlatformGraph(from: graph)
+        let product = try graph.makePlatformGraph()
         platformGraph = product.graph
         outputTensor = product.output
         platformTrainingGraph = MLCTrainingGraph(graphObjects: [product.graph],

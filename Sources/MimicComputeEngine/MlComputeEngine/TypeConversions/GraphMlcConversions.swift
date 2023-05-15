@@ -21,28 +21,27 @@ import Foundation
 import MLCompute
 import MimicTransferables
 
-protocol MlComputeGraphTransformable: PlatformGraphTransformable
-    where PlatformGraph == MLCGraph, PlatformTensor == MLCTensor {}
-
-extension MlComputeGraphTransformable {
-    static func makePlatformGraph(from graph: Graph) throws -> GraphTransformProducts<PlatformGraph, PlatformTensor>
+extension Graph: PlatformGraphTransformable {
+    typealias PlatformGraph = MLCGraph
+    typealias PlatformTensor = MLCTensor
+ 
+    func makePlatformGraph() throws -> GraphTransformProducts<PlatformGraph, PlatformTensor>
     {
         let platformGraph = MLCGraph()
         var inputs = [MLCTensor]()
         
-        let layersOutput: MLCTensor? = try graph
-            .layers
+        let layersOutput: MLCTensor? = try layers
             .enumerated()
             .reduce(nil) { reduceTensor, arguments in
                 var layerInputs = [MLCTensor]()
                 if let sourceTensor = reduceTensor {
                     layerInputs = [sourceTensor]
                 }
-                if let layerInputTensors = graph.layerInputTensors(at: arguments.offset) {
+                if let layerInputTensors = layerInputTensors(at: arguments.offset) {
                     var platformInputTensors = layerInputTensors.map { $0.makeMlcTensor() }
                     inputs.append(contentsOf: platformInputTensors)
                     
-                    if graph.featureChannelPosition == .last {
+                    if featureChannelPosition == .last {
                         platformInputTensors = try platformInputTensors.map {
                             guard
                                 let transposeLayer = MLCTransposeLayer(dimensions: [0, 3, 1, 2]),
@@ -64,7 +63,7 @@ extension MlComputeGraphTransformable {
         
         guard var output = layersOutput else { throw ComputeEngineError.layerConversion }
         
-        if graph.featureChannelPosition == .last {
+        if featureChannelPosition == .last {
             guard
                 let transposeLayer = MLCTransposeLayer(dimensions: [0, 2, 3, 1]),
                 let tensor = platformGraph.node(with: transposeLayer, source: output)

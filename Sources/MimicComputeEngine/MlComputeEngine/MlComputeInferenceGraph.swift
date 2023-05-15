@@ -24,13 +24,12 @@ import MimicTransferables
 /// 
 final class MlComputeInferenceGraph:
     InferenceGraphable,
-    MlComputeGraphTransformable,
     ModelInspectable
 {
     init(graph: Graph) throws {
         self.graph = graph
         
-        let converted = try Self.makePlatformGraph(from: graph)
+        let converted = try graph.makePlatformGraph()
         self.outputTensor = converted.output
         platformInferencGraph = MLCInferenceGraph(graphObjects: [converted.graph])
         platformInferencGraph.addInputs(converted.inputs.makeInputDictionary(startingWith: Constant.inputPrefix))
