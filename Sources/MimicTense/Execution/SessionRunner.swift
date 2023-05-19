@@ -19,7 +19,7 @@
 
 import Foundation
 import MimicTransferables
-import MimicComputeEngine
+import MimicComputeEngineService
 
 /// Class to run training or inference sessions on the backend.
 final class SessionRunner<NativeType: NeuralNativeType> {

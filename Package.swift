@@ -20,28 +20,74 @@ let package = Package(
         .target(
             name: "MimicTense",
             dependencies: [
-                "MimicComputeEngine",
+                "MimicComputeEngineService",
                 "MimicTransferables",
                 "MimicCore",
             ]),
         .target(
-            name: "MimicComputeEngine",
+            name: "MimicComputeEngineService",
             dependencies: [
+                "MimicComputeEngineModule",
+                "MlComputeEngineModule",
+                "MimicTransferables",
+                "MimicCore",
+            ]),
+        .target(
+            name: "MimicComputeEngineModule",
+            dependencies: [
+                "MimicTransferables",
+                "MimicCore",
+            ]),
+        .target(
+            name: "MlComputeEngineModule",
+            dependencies: [
+                "MimicComputeEngineModule",
+                "MimicTransferables",
+                "MimicCore",
+            ]),
+        .target(
+            name: "MpsgComputeEngineModule",
+            dependencies: [
+                "MimicComputeEngineModule",
                 "MimicTransferables",
                 "MimicCore",
             ]),
         .target(name: "MimicTransferables",
                dependencies: ["MimicCore"]),
         .target(name: "MimicCore"),
+        .target(name: "MimicTesting"),
         .testTarget(
             name: "MimicTenseTests",
             dependencies: [
                 "MimicTense",
             ]),
         .testTarget(
-            name: "MimicComputeEngineTests",
+            name: "MimicComputeEngineServiceTests",
             dependencies: [
-                "MimicComputeEngine",
+                "MimicComputeEngineService",
+                "MimicTesting",
+                .product(name: "Collections", package: "swift-collections")
+            ]),
+        .testTarget(
+            name: "MimicComputeEngineModuleTests",
+            dependencies: [
+                "MimicComputeEngineModule",
+                "MlComputeEngineModule",
+                "MpsgComputeEngineModule",
+                "MimicTesting",
+                .product(name: "Collections", package: "swift-collections")
+            ]),
+        .testTarget(
+            name: "MlComputeEngineModuleTests",
+            dependencies: [
+                "MlComputeEngineModule",
+                "MimicTesting",
+                .product(name: "Collections", package: "swift-collections")
+            ]),
+        .testTarget(
+            name: "MpsgComputeEngineModuleTests",
+            dependencies: [
+                "MpsgComputeEngineModule",
                 .product(name: "Collections", package: "swift-collections")
             ]),
         .testTarget(
