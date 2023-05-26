@@ -20,13 +20,45 @@
 import Foundation
 
 
+/// Protocol for native types that are supported in graphs.
 public protocol SupportedNativeType: Random {
-    static var defaultValue: Self { get }
+    /// The zero value for the type.
+    static var zero: Self { get }
+    /// The type's size in number of bytes.
     static var memoryLayoutSize: Int { get }
+    
     init()
+    
+    /// Factory to create a byte buffer representation for the type.
+    func makeBuffer() -> [UInt8]
+    /// Factory to create a type's value from a buffer
+    static func makeValue(from buffer: [UInt8]) throws -> Self
 }
 
+
 extension Float: SupportedNativeType {
-    public static var defaultValue: Float { 0 }
+    enum NativeTypeError: Error {
+        case incompatibleBufferSize
+    }
+    
+    public static var zero: Float { 0 }
     public static var memoryLayoutSize: Int { MemoryLayout<Self>.size }
+    
+    public func makeBuffer() -> [UInt8] {
+        return [UInt8](unsafeUninitializedCapacity: Self.memoryLayoutSize) { buffer, initializedCount in
+            initializedCount = withUnsafeBytes(of: self) { $0.bindMemory(to: UInt8.self).copyBytes(to: buffer) }
+        }
+    }
+    
+    static public func makeValue(from buffer: [UInt8]) throws -> Float {
+        guard buffer.count == Self.memoryLayoutSize else {
+            throw NativeTypeError.incompatibleBufferSize
+        }
+        
+        var value: Float = 0
+        withUnsafeMutableBytes(of: &value) {
+            let _ = buffer.copyBytes(to: $0)
+        }
+        return value
+    }
 }

@@ -55,14 +55,14 @@ public struct TensorArray: Transferable {
         self.tensors = tensors
     }
     
-    public subscript(range: Range<Index>) -> Tensor {
+    public subscript(range: Swift.Range<Index>) -> Tensor {
         guard rank >= 0 else {
             fatalError("Out of bounds.")
         }
         if rank == 4 {
             guard range.upperBound <= endIndex else { fatalError() }
             
-            var tensorRanges = [(Int, Range<Index>)]()
+            var tensorRanges = [(Int, Swift.Range<Index>)]()
             var currentIndex: Int = 0
             tensors
                 .enumerated()
@@ -91,6 +91,6 @@ public struct TensorArray: Transferable {
     }
 
     public subscript(range: ClosedRange<Index>) -> Tensor {
-        self[Range(range)]
+        self[Swift.Range(range)]
     }
 }

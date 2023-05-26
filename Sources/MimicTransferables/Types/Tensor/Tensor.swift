@@ -28,24 +28,39 @@ public struct Tensor: Equatable, Transferable {
     public internal(set) var data: [UInt8]
     public let dataType: DataType
     public internal(set) var featureChannelPosition: FeatureChannelPosition
-    public internal(set) var randomInitializerType: RandomInitializerType?
+    public internal(set) var randomDescriptor: RandomDescriptor?
     
     public var featureChannelCount: Int {
         guard shape.count == 4 else { return 0 }
         return featureChannelPosition == .first ? shape[1] : shape[3]
     }
     
+    /// Initializer
+    ///
+    /// If the RandomDescriptor's type is a type postfixed with "Now", this initializer
+    /// will create the data based on the random distribution type, and set the randomDescriptor
+    /// property to `nil`.
+    ///
+    /// - Parameters:
+    ///   - shape: The shape as an array of Int values.
+    ///   - data: The data in buffer of UInt8 values. The default is an empty array
+    ///   for a placeholder tensor or when initializing with random data.
+    ///   - dataType: The data's type.
+    ///   - featureChannelPosition: Specifies position of a feature channel in the shape.
+    ///   The default is set to last position.
+    ///   - randomDescriptor: A descriptor for generating random numbers from a distribution.
+    ///   
     public init(shape: [Int],
                 data: [UInt8] = [],
                 dataType: DataType,
                 featureChannelPosition: FeatureChannelPosition = .last,
-                randomInitializerType: RandomInitializerType? = nil
+                randomDescriptor: RandomDescriptor? = nil
     ) {
         self.shape = shape
         self.data = data
         self.dataType = dataType
         self.featureChannelPosition = shape.count == 4 ? featureChannelPosition : .notApplicable
-        self.randomInitializerType = randomInitializerType
+        self.randomDescriptor = randomDescriptor
     }
     
     /// Test to determine if tensor is a scalar(rank 0).

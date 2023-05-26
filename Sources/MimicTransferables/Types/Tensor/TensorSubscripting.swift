@@ -26,7 +26,7 @@ extension Tensor {
     ///    - range: The range of the sub-tensor to create.
     ///
     ///  - Returns: A new Tensor for the given range.
-    public subscript(range: Range<Index>) -> Tensor {
+    public subscript(range: Swift.Range<Index>) -> Tensor {
         let subshape = shape[1...]
         let subshapeSize = subshape.isEmpty ? 1 : subshape.reduce(1, *)
         let rangeShape = [range.count] + shape[1...]
@@ -46,7 +46,7 @@ extension Tensor {
     ///
     /// - Returns: A new Tensor for the closed range.
     public subscript(range: ClosedRange<Index>) -> Tensor {
-        self[Range(range)]
+        self[Swift.Range(range)]
     }
     
     ///  Subscripting method for a single index.

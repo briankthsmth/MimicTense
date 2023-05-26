@@ -60,13 +60,13 @@ extension Tensor {
                 data: [UInt8]? = nil,
                 dataType: DataType? = nil,
                 featureChannelPosition: FeatureChannelPosition? = nil,
-                randomInitializerType: RandomInitializerType? = nil)
+                randomDescriptor: RandomDescriptor? = nil)
     {
         self.shape = shape ?? original.shape
         self.data = data ?? original.data
         self.dataType = dataType ?? original.dataType
         self.featureChannelPosition = featureChannelPosition ?? original.featureChannelPosition
-        self.randomInitializerType = randomInitializerType ?? original.randomInitializerType
+        self.randomDescriptor = randomDescriptor ?? original.randomDescriptor
     }
     
     private init<NativeType: SupportedNativeType>(shape: [Int],

@@ -25,9 +25,25 @@ final class SupportedNativeTypeTests: XCTestCase {
         let value: NativeType
     }
     
+    struct Constant {
+        static let floatValue: Float = 4
+        static let bufferedFloat = [UInt8](arrayLiteral: 0, 0, 128, 64)
+    }
+    
     func testMultiplicationWithFloats() {
         let mock1 = Mock(value: Float(2))
         let mock2 = Mock(value: Float(3))
         XCTAssertEqual(mock1.value * mock2.value, 6, accuracy: 0.001)
+    }
+    
+    func testMakeBufferFromFloat() throws {
+        let buffer = Constant.floatValue.makeBuffer()
+        XCTAssertEqual(buffer, Constant.bufferedFloat)
+    }
+    
+    func testMakeFloatFromBuffer() throws {
+        let value = try Float.makeValue(from: Constant.bufferedFloat)
+        XCTAssertEqual(value, Constant.floatValue)
+        XCTAssertThrowsError(try Float.makeValue(from: [UInt8](arrayLiteral: 0, 0)))
     }
 }

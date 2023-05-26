@@ -1,5 +1,5 @@
 //
-//  Copyright 2022 Brian Keith Smith
+//  Copyright 2023 Brian Keith Smith
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -13,11 +13,23 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 //
-//  Created by Brian Smith on 9/28/22.
+//
+//  Created by Brian Smith on 5/19/23.
 //
 
 import Foundation
+import MimicTransferables
+import MetalPerformanceShadersGraph
 
-public enum RandomInitializerType: Transferable {
-    case uniform
+extension Tensor {
+    func makeMpsgTensor(for graph: MPSGraph) -> MPSGraphTensor {
+        return graph.placeholder(shape: [], name: nil)
+    }
+    
+    func makeMpsgTensorData(for device: MPSGraphDevice) -> MPSGraphTensorData {
+        return MPSGraphTensorData(device: device,
+                                  data: Data(),
+                                  shape: [],
+                                  dataType: .float32)
+    }
 }
