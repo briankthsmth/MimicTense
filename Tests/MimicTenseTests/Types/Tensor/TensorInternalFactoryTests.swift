@@ -46,7 +46,8 @@ final class TensorInternalFactoryTests: XCTestCase {
     
     func testTransferableConversionWithRandomInitializer() throws {
         let tensor = MimicTense.Tensor<Float>(shape: [3, 2], randomizer: .uniformDelayed)
-        let expectedTensor = MimicTransferables.Tensor(shape: [3, 2], dataType: .float32, randomInitializerType: .uniform)
+        let randomDescriptor = RandomDescriptor(type: .uniform, range: Float(-1)..<Float(1))
+        let expectedTensor = MimicTransferables.Tensor(shape: [3, 2], dataType: .float32, randomDescriptor: randomDescriptor)
         let transformedTensor = try tensor.makeTransferable()
         XCTAssertEqual(transformedTensor, expectedTensor)
     }

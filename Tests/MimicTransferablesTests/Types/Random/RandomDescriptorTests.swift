@@ -19,17 +19,17 @@ final class RandomDescriptorTests: XCTestCase {
 
     func testInitializerFromSwiftRange() {
         let swiftRange = Float(1)..<Float(3)
-        let descriptor = RandomDescriptor(type: .uniformNow, range: swiftRange)
+        let descriptor = RandomDescriptor(type: .uniform, range: swiftRange)
         
-        XCTAssertEqual(descriptor.type, .uniformNow)
+        XCTAssertEqual(descriptor.type, .uniform)
         XCTAssertEqual(descriptor.range, Range(swiftRange))
     }
 
     func testInitializerFromSwiftClosedRange() {
         let swiftRange = Float(1)...Float(3)
-        let descriptor = RandomDescriptor(type: .uniformNow, range: swiftRange)
+        let descriptor = RandomDescriptor(type: .uniform, range: swiftRange)
         
-        XCTAssertEqual(descriptor.type, .uniformNow)
+        XCTAssertEqual(descriptor.type, .uniform)
         XCTAssertEqual(descriptor.range, Range(swiftRange))
     }
 }

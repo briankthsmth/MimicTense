@@ -22,19 +22,6 @@ import MimicTransferables
 class TensorTests: XCTestCase {
     let data = TensorTestData()
     
-    func testInitializationWithRandomData() throws {
-        let swiftRange = Float(-1) ... Float(1)
-        let randomDescriptor = RandomDescriptor(type: .uniformNow, range: swiftRange)
-        let tensor = Tensor(shape: [3, 4, 1], dataType: .float32, randomDescriptor: randomDescriptor)
-        
-        XCTAssertNil(tensor.randomDescriptor)
-        let data: [[[Float]]] = try XCTUnwrap( tensor.extract(Float.self) as? [[[Float]]] )
-        let array = data.joined().joined()
-        array.forEach {
-            XCTAssertTrue(swiftRange.contains($0))
-        }
-    }
-    
     func testScalarValue() throws {
         // test data conversion
         XCTAssertEqual(Tensor(data.scalar).extractScalar(), data.scalar)

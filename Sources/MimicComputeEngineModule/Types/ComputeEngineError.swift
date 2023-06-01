@@ -19,10 +19,18 @@
 
 import Foundation
 
+/// Errors that can be thrown by compute engine modules.
 public enum ComputeEngineError: Error {
-    case layerConversion
+    /// The compute device was not available.
     case deviceNotAvailable
-    case invalidWeights
+    /// The output tensor was invalid.
     case invalidOutput
+    /// The weights tensor was invalid for a layer in the model.
+    case invalidWeights
+    /// A general error occured converting a layer to the platform layer type.
+    case layerConversion
+    /// Data was missing for instance no data in tensor.
+    case missingData
+    /// The label data was missing.
     case missingLabels
 }

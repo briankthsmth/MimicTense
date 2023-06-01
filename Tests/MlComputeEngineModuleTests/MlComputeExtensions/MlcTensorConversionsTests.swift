@@ -71,6 +71,6 @@ final class MlcTensorConversionsTests: XCTestCase {
         XCTAssertEqual(transferableTensor.data, tensor.copyDataToBuffer())
         XCTAssertEqual(transferableTensor.dataType, DataType(tensor.descriptor.dataType))
         XCTAssertEqual(transferableTensor.featureChannelPosition, .notApplicable)
-        XCTAssertEqual(transferableTensor.randomInitializerType, .none)
+        XCTAssertEqual(transferableTensor.randomDescriptor, .none)
     }
 }

@@ -14,18 +14,13 @@
 //  limitations under the License.
 //
 //
-//  Created by Brian Smith on 5/22/23.
+//  Created by Brian Smith on 5/31/23.
 //
 
 import Foundation
-import MimicTransferables
-import MetalPerformanceShaders
 
-extension DataType {
-    func makeMpsDataType() -> MPSDataType {
-        switch self {
-        case .float32:
-            return .float32
-        }
+extension Array where Element == Int {
+    func mapToMpsShape() -> [NSNumber] {
+        map { NSNumber(value: $0) }
     }
 }

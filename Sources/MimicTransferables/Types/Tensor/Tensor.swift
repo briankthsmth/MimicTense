@@ -23,11 +23,15 @@ import MimicCore
 public struct Tensor: Equatable, Transferable {
     /// Represents the integer index into the tensor data.
     public typealias Index = Int
-    
+    /// Shape of the tensor as an array of integer values.
     public internal(set) var shape: [Int]
+    /// The data as an array of UInt8 elements.
     public internal(set) var data: [UInt8]
+    /// The data's type.
     public let dataType: DataType
+    /// Enumeration to specify how to interpert a feature channel.
     public internal(set) var featureChannelPosition: FeatureChannelPosition
+    /// Descripter for generating random data.
     public internal(set) var randomDescriptor: RandomDescriptor?
     
     public var featureChannelCount: Int {
@@ -37,9 +41,6 @@ public struct Tensor: Equatable, Transferable {
     
     /// Initializer
     ///
-    /// If the RandomDescriptor's type is a type postfixed with "Now", this initializer
-    /// will create the data based on the random distribution type, and set the randomDescriptor
-    /// property to `nil`.
     ///
     /// - Parameters:
     ///   - shape: The shape as an array of Int values.

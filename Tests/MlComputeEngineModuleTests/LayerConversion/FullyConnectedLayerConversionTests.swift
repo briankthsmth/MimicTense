@@ -68,7 +68,8 @@ final class FullyConnectedLayerConversionTests: XCTestCase {
     }
     
     func testWithRandomWeightsInitializer() throws {
-        let weights = Tensor(shape: [2, 7], dataType: .float32, randomInitializerType: .uniform)
+        let randomDescriptor = RandomDescriptor(type: .uniform, range: Float(-1)..<Float(1))
+        let weights = Tensor(shape: [2, 7], dataType: .float32, randomDescriptor: randomDescriptor)
         let layer = Layer(kind: .fullyConnected,
                           dataType: .float32,
                           inputFeatureChannelCount: 7,

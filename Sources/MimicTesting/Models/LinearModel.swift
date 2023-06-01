@@ -51,9 +51,10 @@ public struct LinearModel: TestModel {
             $0[0] * Constant.slope + Constant.intercept
         }
         
+        let randomDescriptor = RandomDescriptor(type: .uniform, range: Float(-1)...Float(1))
         let weights = Tensor(shape: [Constant.outputChannels, Constant.inputChannels],
                                    dataType: .float32,
-                                   randomInitializerType: .uniform)
+                                   randomDescriptor: randomDescriptor)
         let biases = Tensor([Float](repeating: 0, count: Constant.outputChannels))
         let layer = Layer(label: Constant.layerLabel,
                           kind: .fullyConnected,

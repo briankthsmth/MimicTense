@@ -36,7 +36,7 @@ struct MlComputeWeightsFactory {
             let fillData = weightsTensor.extractScalar() ?? 0
             // use tensor as fill data
             return MLCTensor(descriptor: weightsDescriptor, fillWithData: fillData)
-        } else if let intializer = weightsTensor.randomInitializerType {
+        } else if let intializer = weightsTensor.randomDescriptor?.type {
             return MLCTensor(descriptor: weightsDescriptor,
                              randomInitializerType: intializer.makeMlcInitializer())
         }

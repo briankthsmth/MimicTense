@@ -43,9 +43,10 @@ final class MlComputeWeightsFactoryTests: XCTestCase {
     }
     
     func testWithUniformRandomInitializerWeights() throws {
+        let randomDescriptor = RandomDescriptor(type: .uniform, range: Float(-1)..<Float(1))
         let randomWeightTensor = Tensor(shape: shape,
                                         dataType: .float32,
-                                        randomInitializerType: .uniform)
+                                        randomDescriptor: randomDescriptor)
         let tensorFactory = MlComputeWeightsFactory(weightsTensor: randomWeightTensor,
                                                     weightsDescriptor: weightsDescriptor)
         let platformTensor = try tensorFactory()

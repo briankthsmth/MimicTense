@@ -14,22 +14,19 @@
 //  limitations under the License.
 //
 //
-//  Created by Brian Smith on 5/19/23.
+//  Created by Brian Smith on 5/22/23.
 //
 
 import Foundation
 import MimicTransferables
-import MetalPerformanceShadersGraph
+import MetalPerformanceShaders
 
-extension Tensor {
-    func makeMpsgTensor(for graph: MPSGraph) -> MPSGraphTensor {
-        return graph.placeholder(shape: [], name: nil)
-    }
-    
-    func makeMpsgTensorData(for device: MPSGraphDevice) -> MPSGraphTensorData {
-        return MPSGraphTensorData(device: device,
-                                  data: Data(),
-                                  shape: [],
-                                  dataType: .float32)
+extension DataType {
+    /// Factory to create a MPSDataType from a transferable DataType.
+    func makeMpsDataType() -> MPSDataType {
+        switch self {
+        case .float32:
+            return .float32
+        }
     }
 }

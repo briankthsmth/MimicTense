@@ -23,6 +23,4 @@ import MimicCore
 public enum RandomInitializerType: Transferable {
     /// Indicates to create uniform random data when needed.
     case uniform
-    /// Creates uniform random data at the time of initialization.
-    case uniformNow
 }
