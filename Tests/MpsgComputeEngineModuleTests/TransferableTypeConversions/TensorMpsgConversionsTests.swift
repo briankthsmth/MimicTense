@@ -32,7 +32,7 @@ final class TensorMpsgConversionsTests: XCTestCase {
         let graph = MPSGraph()
         let tensor = Tensor(shape: Constant.shape, dataType: Constant.dataType)
         let platformTensor = tensor.makeMpsgTensor(for: graph)
-        XCTAssertEqual(platformTensor.shape, Constant.shape.mapToMpsShape())
+        XCTAssertEqual(platformTensor.shape, Constant.shape.mapToNSNumbers())
         XCTAssertEqual(platformTensor.dataType, Constant.dataType.makeMpsDataType())
     }
     
@@ -49,7 +49,7 @@ final class TensorMpsgConversionsTests: XCTestCase {
         var platformArray = [Float](repeating: 0, count: count)
         platformData.readBytes(&platformArray, strideBytes: nil)
         
-        XCTAssertEqual(platformTensor.shape, tensor.shape.mapToMpsShape())
+        XCTAssertEqual(platformTensor.shape, tensor.shape.mapToNSNumbers())
         XCTAssertEqual(platformTensor.dataType, tensor.dataType.makeMpsDataType())
         XCTAssertEqual(platformArray, data)
     }

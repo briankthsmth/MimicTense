@@ -29,7 +29,7 @@ extension Tensor {
     ///   - graph: The MPSGraph that the MPSGraphTensor will be created for.
     ///
     func makeMpsgTensor(for graph: MPSGraph) -> MPSGraphTensor {
-        return graph.placeholder(shape: shape.mapToMpsShape(),
+        return graph.placeholder(shape: shape.mapToNSNumbers(),
                                  dataType: dataType.makeMpsDataType(),
                                  name: nil)
     }
@@ -45,7 +45,7 @@ extension Tensor {
         guard data.count == shapeByteCount else { throw ComputeEngineError.missingData }
         return MPSGraphTensorData(device: device,
                                   data: Data(data),
-                                  shape: shape.mapToMpsShape(),
+                                  shape: shape.mapToNSNumbers(),
                                   dataType: dataType.makeMpsDataType())
     }
 }

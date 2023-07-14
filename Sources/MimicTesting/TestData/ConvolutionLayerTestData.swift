@@ -14,23 +14,25 @@
 //  limitations under the License.
 //
 //
-//  Created by Brian Smith on 6/2/23.
+//  Created by Brian Smith on 6/26/23.
 //
 
 import Foundation
-import MetalPerformanceShadersGraph
-
 import MimicTransferables
-import MimicComputeEngineModule
 
-extension Layer {
-    func addAdditionLayer(to graph: MPSGraph, inputs: [MPSGraphTensor]) throws -> MPSGraphTensor {
-        guard inputs.count == 2 else { throw ComputeEngineLayerInputsError() }
-        return graph.addition(inputs[0], inputs[1], name: nil)
+public struct ConvolutionLayerTestData {
+    public static let kernelSize = Layer.KernelSize(height: 2, width: 1)
+    public static let inputFeatureChannelCount = 2
+    public static let outputFeatureChannelCount = 3
+    
+    public static var layer: Layer {
+        Layer(kind: .convolution,
+              dataType: .float32,
+              kernelSize: Self.kernelSize,
+              inputFeatureChannelCount: Self.inputFeatureChannelCount,
+              outputFeatureChannelCount: Self.outputFeatureChannelCount
+        )
     }
     
-    func addConvolutionLayer(to graph: MPSGraph, inputs: [MPSGraphTensor]) throws -> MPSGraphTensor {
-        return graph.absolute(with: graph.placeholder(shape: [], name: nil),
-                              name: nil)
-    }
+    public static let inputShape = [4, 4, 2]
 }

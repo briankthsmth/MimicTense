@@ -19,6 +19,7 @@
 
 import XCTest
 import MetalPerformanceShadersGraph
+import MimicTesting
 import MimicTransferables
 @testable import MpsgComputeEngineModule
 
@@ -81,10 +82,36 @@ final class LayerMpsgConversionsTests: XCTestCase {
     }
     
     func testConvertConvolutionLayer() throws {
+        let layer = ConvolutionLayerTestData.layer
+
+        let outputTensor = try run(inputs: []) { inputs in
+            try layer.addConvolutionLayer(to: graph, inputs: inputs)
+        }
         
+        XCTAssertEqual(outputTensor.shape, [7,14,4])
     }
     
     func testConvertFullConnectedLayer() throws {
         
+    }
+    
+    func run(inputs: [Tensor], layerFactory: ([MPSGraphTensor]) throws -> MPSGraphTensor) throws -> Tensor {
+        let graphDevice = try XCTUnwrap(MPSGraphDevice(mtlDevice: device))
+        
+        let mpsgInputs = inputs.map { $0.makeMpsgTensor(for: graph) }
+        let mpsgOutputTensor = try layerFactory(mpsgInputs)
+        
+        var feeds: [MPSGraphTensor: MPSGraphTensorData] = [:]
+        try inputs.enumerated().forEach {
+            feeds[mpsgInputs[$0.offset]] = try $0.element.makeMpsgTensorData(for: graphDevice)
+        }
+        
+        let commandQueue = try XCTUnwrap(device.makeCommandQueue())
+        let result = graph.run(with: commandQueue,
+                               feeds: feeds,
+                               targetTensors: [mpsgOutputTensor],
+                               targetOperations: nil)
+        
+        return Tensor(shape: [], dataType: .float32)
     }
 }

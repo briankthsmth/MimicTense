@@ -14,23 +14,30 @@
 //  limitations under the License.
 //
 //
-//  Created by Brian Smith on 6/2/23.
+//  Created by Brian Smith on 7/14/23.
 //
 
 import Foundation
-import MetalPerformanceShadersGraph
-
 import MimicTransferables
-import MimicComputeEngineModule
 
-extension Layer {
-    func addAdditionLayer(to graph: MPSGraph, inputs: [MPSGraphTensor]) throws -> MPSGraphTensor {
-        guard inputs.count == 2 else { throw ComputeEngineLayerInputsError() }
-        return graph.addition(inputs[0], inputs[1], name: nil)
+public struct ComputeEnginePlatformTensorError: LocalizedError, Transferable {
+    public enum Reason: Transferable {
+        case missingShape
+        case dataTypeUnsupported
     }
     
-    func addConvolutionLayer(to graph: MPSGraph, inputs: [MPSGraphTensor]) throws -> MPSGraphTensor {
-        return graph.absolute(with: graph.placeholder(shape: [], name: nil),
-                              name: nil)
+    public let reason: Reason
+    
+    public init(reason: Reason) {
+        self.reason = reason
+    }
+    
+    public var errorDescription: String? {
+        switch reason {
+        case .missingShape:
+            NSLocalizedString("Platform trensor missing shape.", comment: "Error message.")
+        case .dataTypeUnsupported:
+            NSLocalizedString("The platform tensor's data type is not supported.", comment: "Error message")
+        }
     }
 }

@@ -55,7 +55,8 @@ let package = Package(
         .target(name: "MimicTransferables",
                dependencies: ["MimicCore"]),
         .target(name: "MimicCore"),
-        .target(name: "MimicTesting"),
+        .target(name: "MimicTesting",
+               dependencies: ["MimicTransferables"]),
         .testTarget(
             name: "MimicTenseTests",
             dependencies: [
@@ -88,6 +89,7 @@ let package = Package(
             name: "MpsgComputeEngineModuleTests",
             dependencies: [
                 "MpsgComputeEngineModule",
+                "MimicTesting",
                 .product(name: "Collections", package: "swift-collections")
             ]),
         .testTarget(

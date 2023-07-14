@@ -20,7 +20,15 @@
 import Foundation
 
 extension Array where Element == Int {
-    func mapToMpsShape() -> [NSNumber] {
+    /// Function that will map Int elements to NSNumbers, which are used for MPSG shapes.
+    func mapToNSNumbers() -> [NSNumber] {
         map { NSNumber(value: $0) }
+    }
+}
+
+extension Array where Element == NSNumber {
+    /// Function to map NSNumber elements, used by MPSG shapes, to arrays of Int elements.
+    func mapToInts() -> [Int] {
+        map { $0.intValue }
     }
 }

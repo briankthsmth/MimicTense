@@ -22,6 +22,22 @@ import MimicTransferables
 import MetalPerformanceShaders
 
 extension DataType {
+    /// Factory initializer to create a DataType from a MPSDataType
+    ///
+    /// If the MPSDataType is not supported, this initializer will return a nil instance.
+    ///
+    /// - Parameters:
+    ///   - type: A MPSDataType
+    ///
+    init?(_ type: MPSDataType) {
+        switch type {
+        case .float32:
+            self = .float32
+        default:
+            return nil
+        }
+    }
+    
     /// Factory to create a MPSDataType from a transferable DataType.
     func makeMpsDataType() -> MPSDataType {
         switch self {

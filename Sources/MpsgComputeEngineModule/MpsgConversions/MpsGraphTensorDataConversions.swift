@@ -14,23 +14,24 @@
 //  limitations under the License.
 //
 //
-//  Created by Brian Smith on 6/2/23.
+//  Created by Brian Smith on 7/14/23.
 //
 
 import Foundation
 import MetalPerformanceShadersGraph
-
 import MimicTransferables
 import MimicComputeEngineModule
 
-extension Layer {
-    func addAdditionLayer(to graph: MPSGraph, inputs: [MPSGraphTensor]) throws -> MPSGraphTensor {
-        guard inputs.count == 2 else { throw ComputeEngineLayerInputsError() }
-        return graph.addition(inputs[0], inputs[1], name: nil)
-    }
-    
-    func addConvolutionLayer(to graph: MPSGraph, inputs: [MPSGraphTensor]) throws -> MPSGraphTensor {
-        return graph.absolute(with: graph.placeholder(shape: [], name: nil),
-                              name: nil)
+extension MPSGraphTensorData {
+    func makeTensor() throws -> Tensor {
+        guard let dataType = DataType(dataType) else {
+            throw ComputeEnginePlatformTensorError(reason: .dataTypeUnsupported)
+        }
+        
+        let shape = shape.mapToInts()
+        var buffer = [UInt8](repeating: 0, count: shape.reduce(1, *) * dataType.memoryLayoutSize)
+        mpsndarray().readBytes(&buffer, strideBytes: nil)
+        
+        return Tensor(shape: shape, data: buffer, dataType: dataType)
     }
 }
