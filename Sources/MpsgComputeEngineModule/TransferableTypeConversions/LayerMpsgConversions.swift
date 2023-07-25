@@ -24,13 +24,37 @@ import MimicTransferables
 import MimicComputeEngineModule
 
 extension Layer {
+    typealias TensorPair = (placeholder: MPSGraphTensor, data: MPSGraphTensorData)
+    
     func addAdditionLayer(to graph: MPSGraph, inputs: [MPSGraphTensor]) throws -> MPSGraphTensor {
         guard inputs.count == 2 else { throw ComputeEngineLayerInputsError() }
         return graph.addition(inputs[0], inputs[1], name: nil)
     }
     
-    func addConvolutionLayer(to graph: MPSGraph, inputs: [MPSGraphTensor]) throws -> MPSGraphTensor {
-        return graph.absolute(with: graph.placeholder(shape: [], name: nil),
-                              name: nil)
+    func addConvolutionLayer(to graph: MPSGraph,
+                             device: MPSGraphDevice,
+                             inputs: [MPSGraphTensor]) throws -> (output: MPSGraphTensor, weightsPair: TensorPair)
+    {
+        guard let descriptor = MPSGraphConvolution2DOpDescriptor(strideInX: 1,
+                                                                 strideInY: 1,
+                                                                 dilationRateInX: 1,
+                                                                 dilationRateInY: 1,
+                                                                 groups: 1,
+                                                                 paddingStyle: .TF_SAME,
+                                                                 dataLayout: .NHWC,
+                                                                 weightsLayout: .HWIO),
+              let weights = weights,
+              let input = inputs.first
+        else {
+            throw ComputeEngineLayerInputsError()
+        }
+        
+        let mpsgWeights = weights.makeMpsgTensor(for: graph)
+        let mpsgWeightsData = try weights.makeMpsgTensorData(for: device)
+        let mpsgOutput = graph.convolution2D(input,
+                                             weights: mpsgWeights,
+                                             descriptor: descriptor,
+                                             name: nil)
+        return (mpsgOutput, (mpsgWeights, mpsgWeightsData))
     }
 }

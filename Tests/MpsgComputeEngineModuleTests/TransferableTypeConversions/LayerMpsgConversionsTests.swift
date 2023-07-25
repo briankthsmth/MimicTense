@@ -30,6 +30,11 @@ final class LayerMpsgConversionsTests: XCTestCase {
             static let secondOperand: Float = 3
         }
     }
+    
+    enum TestError: Error {
+        case noOutputTensorData
+    }
+    
     var device: MTLDevice!
     var graph: MPSGraph!
     
@@ -40,37 +45,14 @@ final class LayerMpsgConversionsTests: XCTestCase {
     
     func testConvertAdditionLayer() throws {
         let layer = Layer(kind: .arithmetic, dataType: .float32, arithmeticOperation: .add)
-        let firstOperand = graph.placeholder(shape: [], dataType: .float32, name: "firstOperand")
-        let secondOperand = graph.placeholder(shape: [], dataType: .float32, name: "secondOperand")
-        let outputTensor = try layer.addAdditionLayer(to: graph, inputs: [firstOperand, secondOperand])
+        let firstOperand = Tensor(Constant.Addition.firstOperand)
+        let secondOperand = Tensor(Constant.Addition.secondOperand)
+        let outputTensor = try run(inputs: [firstOperand, secondOperand]) {
+            let output = try layer.addAdditionLayer(to: graph, inputs: $0)
+            return (output, nil)
+        }
         
-        XCTAssertEqual(outputTensor.shape, [])
-        
-        let graphDevice = MPSGraphDevice(mtlDevice: device)
-        let firstOperandArray = [Float](arrayLiteral: Constant.Addition.firstOperand)
-        let firstOperandData = MPSGraphTensorData(device: graphDevice,
-                                                  data: Data(bytes: firstOperandArray, count: firstOperandArray.count * Float.memoryLayoutSize),
-                                                  shape: [],
-                                                  dataType: .float32)
-        let secondOperandArray = [Float](arrayLiteral: Constant.Addition.secondOperand)
-        let secondOperandData = MPSGraphTensorData(device: graphDevice,
-                                                   data: Data(bytes: secondOperandArray, count: secondOperandArray.count * Float.memoryLayoutSize),
-                                                   shape: [],
-                                                   dataType: .float32)
-        let commandQueue = try XCTUnwrap(device.makeCommandQueue())
-        let result = graph.run(with: commandQueue,
-                               feeds:
-                                [
-                                    firstOperand : firstOperandData,
-                                    secondOperand : secondOperandData
-                                ],
-                               targetTensors: [outputTensor],
-                               targetOperations: nil)
-        let resultOutputData = try XCTUnwrap(result[outputTensor])
-        var resultValue: Float = 0
-        resultOutputData.mpsndarray().readBytes(&resultValue, strideBytes: nil)
-        
-        XCTAssertEqual(resultValue, Constant.Addition.firstOperand + Constant.Addition.secondOperand)
+        XCTAssertEqual(outputTensor, Tensor([Constant.Addition.firstOperand + Constant.Addition.secondOperand]))
     }
     
     func testAdditionLayerInputsErrors() throws {
@@ -84,34 +66,41 @@ final class LayerMpsgConversionsTests: XCTestCase {
     func testConvertConvolutionLayer() throws {
         let layer = ConvolutionLayerTestData.layer
 
-        let outputTensor = try run(inputs: []) { inputs in
-            try layer.addConvolutionLayer(to: graph, inputs: inputs)
+        let outputTensor = try run(inputs: [ConvolutionLayerTestData.input]) { inputs in
+            let tensors = try layer.addConvolutionLayer(to: graph, device: MPSGraphDevice(mtlDevice: device), inputs: inputs)
+            return (tensors.output, tensors.weightsPair)
         }
         
-        XCTAssertEqual(outputTensor.shape, [7,14,4])
+        XCTAssertEqual(outputTensor, ConvolutionLayerTestData.output)
     }
     
     func testConvertFullConnectedLayer() throws {
         
     }
     
-    func run(inputs: [Tensor], layerFactory: ([MPSGraphTensor]) throws -> MPSGraphTensor) throws -> Tensor {
+    func run(inputs: [Tensor], layerFactory: ([MPSGraphTensor]) throws -> (output: MPSGraphTensor, weightsPair: Layer.TensorPair?)) throws -> Tensor {
         let graphDevice = try XCTUnwrap(MPSGraphDevice(mtlDevice: device))
         
         let mpsgInputs = inputs.map { $0.makeMpsgTensor(for: graph) }
-        let mpsgOutputTensor = try layerFactory(mpsgInputs)
+        let tensors = try layerFactory(mpsgInputs)
         
         var feeds: [MPSGraphTensor: MPSGraphTensorData] = [:]
         try inputs.enumerated().forEach {
             feeds[mpsgInputs[$0.offset]] = try $0.element.makeMpsgTensorData(for: graphDevice)
         }
+        if let weightsPair = tensors.weightsPair {
+            feeds[weightsPair.placeholder] = weightsPair.data
+        }
+        
         
         let commandQueue = try XCTUnwrap(device.makeCommandQueue())
         let result = graph.run(with: commandQueue,
                                feeds: feeds,
-                               targetTensors: [mpsgOutputTensor],
+                               targetTensors: [tensors.output],
                                targetOperations: nil)
         
-        return Tensor(shape: [], dataType: .float32)
+        guard let tensorData = result[tensors.output] else { throw  TestError.noOutputTensorData }
+        
+        return try tensorData.makeTensor()
     }
 }
