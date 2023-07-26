@@ -20,7 +20,7 @@
 import Foundation
 import MimicTransferables
 
-public struct ComputeEngineLayerInputsError : LocalizedError, Transferable {
+public struct ComputeEngineLayerInputsError : LocalizedError, Transferable, Equatable {
     public init() {}
     
     public var errorDescription: String? {

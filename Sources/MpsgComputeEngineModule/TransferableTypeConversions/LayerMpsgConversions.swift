@@ -35,6 +35,9 @@ extension Layer {
                              device: MPSGraphDevice,
                              inputs: [MPSGraphTensor]) throws -> (output: MPSGraphTensor, weightsPair: TensorPair)
     {
+        guard let input = inputs.first else {
+            throw ComputeEngineLayerInputsError()
+        }
         guard let descriptor = MPSGraphConvolution2DOpDescriptor(strideInX: 1,
                                                                  strideInY: 1,
                                                                  dilationRateInX: 1,
@@ -43,8 +46,7 @@ extension Layer {
                                                                  paddingStyle: .TF_SAME,
                                                                  dataLayout: .NHWC,
                                                                  weightsLayout: .HWIO),
-              let weights = weights,
-              let input = inputs.first
+              let weights = weights
         else {
             throw ComputeEngineLayerInputsError()
         }
